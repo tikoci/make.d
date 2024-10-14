@@ -3,6 +3,8 @@
 
 # todo: needs renaming, perhaps should include Makefile and this is NOT included...
 
+UNAME_MACHINE := $(shell uname -m)
+
 .PHONY: init
 init: base-apks base-files add-users
 	$(info init run)
@@ -10,6 +12,7 @@ init: base-apks base-files add-users
 .PHONY: base-apks
 # ** base-apks ** installs the core packages used by all other packages 
 base-apks:
+	$(info running on $(UNAME_MACHINE))
 	apk add --no-cache \
 		busybox-extras \
 		make make-doc \
@@ -22,7 +25,12 @@ base-apks:
 		patch patch-doc \
 		nano nano-doc nano-syntax \
 		bash bash-doc bash-completion ncurses ncurses-doc ncurses-terminfo
-	apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing mdcat openapi-tui 
+	apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing mdcat
+ifeq ($(ARCH), armhf)
+	$(warning "Skipping openapi-tui on armhf architecture")
+else
+	apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing mdcat
+endif 
 # add syntax coloring to nano (busybox vi does not support colors, so only nano has colors by default)
 	echo 'include "/usr/share/nano/*.nanorc"' >> /etc/nanorc
 #	update man page index
