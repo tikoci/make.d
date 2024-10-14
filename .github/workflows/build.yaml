@@ -51,6 +51,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         repository: ammo74/make.d
+        readme-filepath: "./.github/dockerhub.md"
         short-description: "make.d - RouterOS-friendly Alpine /container, managed by make"
     - 
       name: Build image and push image to ghcr.io
