@@ -51,7 +51,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         repository: ammo74/make.d
-        short-description: "make.d - RouterOS-friendly Alpine /container, managed by `make`"
+        short-description: "make.d - RouterOS-friendly Alpine /container, managed by make"
     - 
       name: Build image and push image to ghcr.io
       uses: docker/build-push-action@v5
