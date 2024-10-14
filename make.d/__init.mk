@@ -26,15 +26,15 @@ base-apks:
 		nano nano-doc nano-syntax \
 		bash bash-doc bash-completion ncurses ncurses-doc ncurses-terminfo
 	apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing mdcat
-ifeq ($(ARCH), armhf)
+ifeq ($(UNAME_MACHINE),armv7l)
 	$(warning "Skipping openapi-tui on armhf architecture")
 else
-	apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing mdcat
+	apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing openapi-tui
 endif 
 # add syntax coloring to nano (busybox vi does not support colors, so only nano has colors by default)
 	echo 'include "/usr/share/nano/*.nanorc"' >> /etc/nanorc
 #	update man page index
-	$(shell makewhatis)
+	makewhatis
 
 
 .PHONY: add-users
