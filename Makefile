@@ -66,20 +66,6 @@ include $(initd_mk_files)
 # 		This uses Makefile's ?= syntax, which sets default value - if one was NOT provided by else
 # If not services set, enable  "syslogd" and "sshd"
 # The list of services to automatically start is a variable SERVICES.
-SERVICES ?= syslogd sshd
+SERVICES ?= syslogd sshd http
 run: $(SERVICES) 
 	$(info make.init terminating - this may be unexpected)
-
-
-# For make.d development
-# ... when used on a desktop with Docker installed
-# `make _dockerbuild` will create a **local** version for testing,
-# ... and put you the moral-equivalent of /container/shell.
-
-.PHONY: _dockerbuild
-# DOCKER_OPTS ?= --platform=linux/arm/v7
-DOCKER_RUN ?= -it
-.ONESHELL: _dockerlocal
-_dockerlocal: 
-	docker buildx build $(DOCKER_OPTS) --tag make.d .
-	PID=$$(docker run --detach $(DOCKER_RUN) `docker images | awk '{print $$3}' | awk 'NR==2'` $(SERVICES)) && docker exec -it $$PID /bin/bash && docker kill $$PID;

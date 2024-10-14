@@ -9,15 +9,25 @@
 # ... and put you the moral-equivalent of /container/shell.
 # various out docker- things are below
 
-# ** DO NOT EDIT container files **  -  edit Makefile on PC then re-run "make docker-run" 
-# N.B.: since docker-run will REMOVE the container when you exit - this forces automting things in recipe...
+# ** DO NOT EDIT container files **  -  edit Makefile on PC then re-run "make docker-shell" 
+# N.B.: since docker-shell will REMOVE the container when you exit - this forces automting things in recipe...
 #       Now.. some quick changes are okay - but this forces a cut-and-paste back to a make.d/*.mk.
+
+DOCKER_PORTMAP ?= 28080:80
+
+.PHONY: docker-shell
+DOCKER_RUN ?= -it
+.ONESHELL: docker-shell
+docker-shell: 
+	docker buildx build $(DOCKER_OPTS) --tag make.d .
+	PID=$$(docker run  -p $(DOCKER_PORTMAP) --detach $(DOCKER_RUN) `docker images | awk '{print $$3}' | awk 'NR==2'` $(SERVICES)) && docker exec -it $$PID /bin/bash && docker kill $$PID && docker rm $$PID;
+
 .PHONY: docker-run
 DOCKER_RUN ?= -it
 .ONESHELL: docker-run
 docker-run: 
 	docker buildx build $(DOCKER_OPTS) --tag make.d .
-	PID=$$(docker run --detach $(DOCKER_RUN) `docker images | awk '{print $$3}' | awk 'NR==2'` $(SERVICES)) && docker exec -it $$PID /bin/bash && docker kill $$PID && docker rm $$PID;
+	PID=$$(docker run -p $(DOCKER_PORTMAP) --detach $(DOCKER_RUN) `docker images | awk '{print $$3}' | awk 'NR==2'` $(SERVICES))
 
 # todo: quick hack for test, should be built on GitHub
 .PHONY: docker-build

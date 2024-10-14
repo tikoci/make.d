@@ -27,11 +27,18 @@ RUN make -f /app/make.d/__init.mk
 # initialize git in /app to track changes
 RUN git init --initial-branch=main
 
+# not used by RouterOS but suggest something to Docker
+EXPOSE 22
+EXPOSE 80
+EXPOSE 443
+EXPOSE 3000
+EXPOSE 8080
+
 
 # IMPORTANT: CMD and ENTRYPOINT must use array syntax - otherwise args don't work
 
 # make is entrypoint - see README.md for details on this approach 
-ENTRYPOINT ["make", "--debug=a", "--jobs=1024", "--no-builtin-rules", "--include-dir=/app/make.d", "--warn-undefined-variables"]
+ENTRYPOINT ["make", "--debug=a", "--jobs=1024", "--no-builtin-rules", "--warn-undefined-variables"]
 # note: the "-j 10" is the job limit for parallel jobs, by default its 2
 #       but as an "init" process
 

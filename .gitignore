@@ -1,2 +1,3 @@
 *.tar
 old/
+.DS_Store
