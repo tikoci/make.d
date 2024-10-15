@@ -44,6 +44,13 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - 
+      name: VERSION file to CI envvars
+      run: |
+        cat VERSION | awk '{ print "MAKED_NAME=" $1 }' >> $GITHUB_ENV
+        cat VERSION | awk '{ print "MAKED_VER=" $2 }' >> $GITHUB_ENV
+        cat VERSION | awk '{ print "MAKED_CHANNEL=" $3 }' >> $GITHUB_ENV
+  
 # This gets a build error, something about the readme perhaps, but dunno.
 #    - 
 #      name: Add README to Docker Hub
@@ -54,6 +61,7 @@ jobs:
 #        repository: ammo74/make.d
 #        readme-filepath: "./.github/dockerhub.md"
 #        short-description: "make.d - RouterOS-friendly Alpine /container, managed by Makefile"
+
     - 
       name: Build image and push image to ghcr.io
       uses: docker/build-push-action@v5
@@ -65,7 +73,11 @@ jobs:
         platforms: ${{ env.PLATFORMS }}
         tags: |
           ghcr.io/${{ github.repository }}:latest
+          ghcr.io/${{ github.repository }}:${{ env.MAKED_CHANNEL }}
+          ghcr.io/${{ github.repository }}:${{ env.MAKED_VER }}
           ammo74/make.d:latest
+          ammo74/make.d:${{ env.MAKED_VER }}
+          ammo74/make.d:${{ env.MAKED_CHANNEL }}
         build-args: |
           GHCR_REPO=${{ github.repository }}
           GHCR_TAG=${{ steps.meta.outputs.tags }}
