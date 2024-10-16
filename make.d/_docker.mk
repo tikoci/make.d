@@ -14,16 +14,15 @@
 #       Now.. some quick changes are okay - but this forces a cut-and-paste back to a make.d/*.mk.
 
 DOCKER_PORTMAP ?= 28080:80
+DOCKER_RUN ?= --net=host
 
 .PHONY: docker-shell
-DOCKER_RUN ?= -it
 .ONESHELL: docker-shell
 docker-shell: 
 	docker buildx build $(DOCKER_OPTS) --tag make.d .
-	PID=$$(docker run  -p $(DOCKER_PORTMAP) --detach $(DOCKER_RUN) `docker images | awk '{print $$3}' | awk 'NR==2'` $(SERVICES)) && docker exec -it $$PID /bin/bash && docker kill $$PID && docker rm $$PID;
+	PID=$$(docker run --detach $(DOCKER_RUN) `docker images | awk '{print $$3}' | awk 'NR==2'` $(SERVICES)) && docker exec -it $$PID /bin/bash && docker kill $$PID && docker rm $$PID;
 
 .PHONY: docker-run
-DOCKER_RUN ?= -it
 .ONESHELL: docker-run
 docker-run: 
 	docker buildx build $(DOCKER_OPTS) --tag make.d .

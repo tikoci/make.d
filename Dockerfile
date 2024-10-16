@@ -18,14 +18,17 @@ COPY Makefile /app/Makefile
 COPY README.md /app/readme.md
 COPY make.d/* /app/make.d/
 COPY VERSION /VERSION 
+COPY .gitignore /app/.gitignore
 
 # install a curated set of Alpine packages
 # basically some "inetd" things, common
-RUN make -f /app/make.d/__init.mk
-
-
+RUN make -f /app/make.d/__init.mk \
 # initialize git in /app to track changes
-RUN git init --initial-branch=main
+    && git init --initial-branch=local \
+    && git add --all \
+    && git config --global user.name "make.d git" \
+    && git config --global user.email "make.d@tikoci.github.io" \
+    && git commit -m "default-configuration"
 
 # not used by RouterOS but suggest something to Docker
 EXPOSE 22

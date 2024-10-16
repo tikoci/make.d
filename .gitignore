@@ -1,3 +1,4 @@
 *.tar
 old/
 .DS_Store
+postgres/data/

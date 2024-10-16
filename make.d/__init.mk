@@ -19,18 +19,12 @@ base-apks:
 		mandoc man-pages mandoc-apropos mandoc-doc less less-doc busybox-doc \
 		dropbear dropbear-doc dropbear-ssh dropbear-scp dropbear-dbclient \
 		inetutils-telnet inetutils-ftp-doc \
-		mosquitto-clients mqttui mqttui-bash-completion \
-		curl curl-doc jq jq-doc jo jo-doc \
+		curl curl-doc jq jq-doc jo jo-doc ca-certificates \
 		git git-doc git-bash-completion gitui \
-		patch patch-doc \
+		patch patch-doc shadow shadow-doc \
 		nano nano-doc nano-syntax \
 		bash bash-doc bash-completion ncurses ncurses-doc ncurses-terminfo
 	apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing mdcat
-ifeq ($(UNAME_MACHINE),armv7l)
-	$(warning "Skipping openapi-tui on armhf architecture")
-else
-	apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing openapi-tui
-endif 
 # add syntax coloring to nano (busybox vi does not support colors, so only nano has colors by default)
 	echo 'include "/usr/share/nano/*.nanorc"' >> /etc/nanorc
 #	update man page index
@@ -65,6 +59,7 @@ base-files: replace-motd /usr/local/bin/mk /usr/local/bin/edit /usr/share/bash-c
 .PHONY: replace-motd
 replace-motd:
 	$(shell cat /VERSION > /etc/motd) 
+	$(shell echo "" >> /etc/motd) 
 	$(file >>/etc/motd,$(etc_motd)) 
 
 /usr/local/bin/mk:
@@ -85,13 +80,13 @@ replace-motd:
 
 define etc_motd
 
+
 ███╗   ███╗ █████╗ ██╗  ██╗███████╗   ██████╗ 
 ████╗ ████║██╔══██╗██║ ██╔╝██╔════╝   ██╔══██╗
 ██╔████╔██║███████║█████╔╝ █████╗     ██║  ██║
 ██║╚██╔╝██║██╔══██║██╔═██╗ ██╔══╝     ██║  ██║
 ██║ ╚═╝ ██║██║  ██║██║  ██╗███████╗██╗██████╔╝
 ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝╚═════╝ 
-
 
 For help, use `man <command>`, or `man -k <search>`.
 

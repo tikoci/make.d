@@ -10,6 +10,7 @@ BLOCKY_CONFIG := example.yml
 blocky: /usr/bin/blocky
 	/usr/bin/blocky --config /app/blocky/$(BLOCKY_CONFIG)
 
+.PRECIOUS: /usr/bin/blocky
 /usr/bin/blocky:
 	mkdir -p /app/blocky
 	$(call apk_add, blocky bind-tools)
@@ -24,6 +25,7 @@ BIND9_RUN_FG ?= -f
 bind9: /usr/sbin/named
 	/usr/sbin/named $(BIND9_RUN_FG) $(BIND9_OPTS)
 
+.PRECIOUS: /usr/sbin/named
 /usr/sbin/named:
 	mkdir -p /app/bind9
 	$(call apk_add, bind bind-doc bind-tools)

@@ -1,11 +1,13 @@
 ## ** HELP **
 # > Help system and "notes"
 
+.PHONE: all-help
+all-help: help commentary
+
 .PHONY: help
 help: help-update
 	cat /etc/motd
 	$(warning Help is work-in-progress...)
-
 
 commentary: notes-container-use notes-tips notes-future-fixes notes-future-recipes notes-implementation
 	$(info )
@@ -36,21 +38,22 @@ help-update:
 
 .PHONY: notes-tips
 notes-tips:
-	$(info =)
 	$(warning ** make.d TIPS **)
 	$(info - make.d adds two scripts: `mk` and `edit` - the rest is in Makefile in /app)
 	$(info - `edit` follows $$EDITOR var - `nano` is default and shows syntax error+colors)
 	$(info - `mk` just wraps `make -f /app/Makefile ...` but shorter & work from any `pwd`)
-	$(info - bash <tab><tab> completions are included - in root shell, type 'bash' first)
+	$(info - bash <tab><tab> completions are included - in root shell, type `bash` first)
 	$(info - ... and this includes `mk` will list `make` targets with mk<tab><tab>.)
 	$(info - manpages too - use man <command>, or man -k <topic>)
-	$(info - for viewing in color with paging use 'mdless' (& 'mdcat'))
-	$(info =)
+	$(info - for viewing in color with paging use `mdless` (& `mdcat`))
+	$(info - the "shell jobs" cmds can be useful, see JOB CONTROL section in `man bash`)
+	$(info   ... or try ^Z from longer make to "suspend", then `bg %1` to background it ) 
+	$(info - /app is a `git` repo, even if not used to "checkin" - can see diff's from defaults) 
+	$(info   ... use `git status` to see all changes, `git diff <file>` for one file ) 
 
 
 .PHONY: notes-container-use
 notes-container-use:
-	$(info =)
 	$(info ** ROUTEROS CONTAINER USAGE **)
 	$(info - Create a new container using this image, no mount or env are strickly needed)
 	$(info - In RouterOS, using dst-nat for incoming ports to make.d)
@@ -60,45 +63,38 @@ notes-container-use:
 	$(info  `make` is not picky on order, recipes and KEY=val vars can be mixed.)
 	$(info - To test in /container/shell first, use `mk <recipe> [<recipe>]... &`, note ampersand)
 	$(info - Options like BIND9_PORT=80 can be provided via "envs", instead of in `cmd=`.)
-	$(info =)
 
 
 .PHONY: notes-future-fixes
 # just for fun, targets can just output text, here "todo" 
 notes-future-fixes: 
-	$(info =)
 	$(warning ** META BUGS **)
 	$(info - proper README.md at least) 
 	$(info   and some better help system, perhaps a 'helpme' command?)
 	$(info   plus routeros-side script/config/examples to use make.d services) 
 	$(info - syslogd is wired up, but more pkgs use, and vars for remote syslog) 
 	$(info - default "sysop" user is untest... generally dealing users+permissions+keys)
-	$(info - cleanup apks- all- etc- target naming/schemes so clearer/org'd)
 	$(info - test/cleanup invoking browser from CLI, at least via shh)
 	$(info - need some tools to test/use RADIUS from user-manager)
 	$(info - more meta data and package dep tracking, TBD method)
-	$(info - sometime git is slow, perhaps git config --global http.postBuffer 157286400 ?)
-	$(info =)
+	$(info - sometimes git is slow, perhaps git config --global http.postBuffer 157286400 ?)
 
 .PHONY: notes-future-recipes
 notes-future-recipes:	
-	$(info =)
 	$(warning *** RECIPES IN THE WORKS **)
 	$(info lora - [priority] some small LoRa network server ... lorawan-server? chripstack?)
 	$(info dns - currently blocky and bind9, but add unbound just round out)
-	$(info http - [apks-currently] lighttpd traefik as first two)
-	$(info mail - [apks-currently] exim dovecot? imap?)
+	$(info http - lighttpd plugins, plus basiec traefik as first two)
+	$(info mail - [WIP] exim dovecot? imap?)
 	$(info vpn - [idea] wg* zerotier*)
 	$(info remote - [idea] X11? rdp? vnc?)
 	$(info directory - [idea] openldap++ nis+?)
 	$(info rtp - [idea] various audio-video utils)
-	$(info tuitools - [looking-out] find/add more nice TUIs, like current mqttui)
+	$(info tuitools - [more google search] find/add more nice TUIs, like current mqttui)
 	$(warning make.d recipes are easy - testing and documenting them is harder)
-	$(info =)
 
 .PHONY: notes-implementation
 notes-implementation:
-	$(info =)
 	$(warning ** BUILDING NEW RECIPES **)
 	$(info - GNU make manual is excellent!  Search that first.)
 	$(info   Questions like WTF is .ONESHELL or two-pass variable eval will be answered.) 
@@ -108,6 +104,7 @@ notes-implementation:
 	$(info   ...so cut-and-paste may work to get you started) 
 	$(info - All paths used must be FULLY QUALIFIED - do not expect PATH to work in any target)
 	$(info   & also CRITICAL all new recipes have .PHONY if they are not real files!)
+	$(info - .PRECIOUS is used when a target file is installed by a package - to prevent make from del on failure!)
 	$(info - `make` looks for a Makefile in `pwd`, `mk` uses -f /app/Makefile to avoid that)
 	$(info - You'll note `make -J ...` controls parallel runners)
 	$(info   & what allow multiple services/daemons to run at same time & critical)
@@ -116,7 +113,6 @@ notes-implementation:
 	$(info - $$(varname) are make variables, while "double dollars" $$$$varname is for shell variables inside a recipe)
 	$(info   Backslash \ is NOT an escape in make! In code, above uses 4 dollars $$$$$$$$ (and 8 in Makefile here)) 
 	$(info   And, yes, escaping – patch files need to some $$$$ love too, otherwise patch will fail)
-	$(info =)
 
 # MAN SECTIONS
 #    1         General commands (tools and utilities).

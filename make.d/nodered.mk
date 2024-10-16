@@ -11,6 +11,7 @@ nodered: /usr/local/bin/node-red
 /usr/local/bin/node-red: /usr/bin/node
 	npm install -g --unsafe-perm node-red
 
-.PHONY: upgrade-node-red
-upgrade-nodered:
+.PHONY: nodered-update 
+nodered-update:
+	npm update
 	npm upgrade node-red

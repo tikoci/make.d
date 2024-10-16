@@ -16,6 +16,8 @@ traefik:
 LIGHTTPD_OPTS ?= -f /app/lighttpd/lighttpd.conf
 lighttpd: /usr/sbin/lighttpd
 	lighttpd -D $(LIGHTTPD_OPTS)
+
+.PRECIOUS: /usr/sbin/lighttpd    
 /usr/sbin/lighttpd:
 	$(call apk_add, lighttpd lighttpd-doc)
 	$(shell mkdir -p /app/lighttpd/www/htdocs)
@@ -44,16 +46,20 @@ endef
 # This is example of building go code, pocketbase itself is untested other than it starts
 pocketbase: /usr/local/bin/pocketbase
 	$(shell mkdir -p /app/pocketbase)
-	/usr/local/bin/pocketbase serve /app/pocketbase 
+	/usr/local/bin/pocketbase serve /app/pocketbase
+
+.PRECIOUS: /usr/local/bin/pocketbase 
 /usr/local/bin/pocketbase:
-	$(call apk_add, go, libffi-dev libgcrypt-dev libressl-dev)
+	$(call build_apk_addgroup, .build-pocketbase, go, libffi-dev libgcrypt-dev libressl-dev)
 	$(shell mkdir -p /usr/local/src/pocketbase)
 	$(shell git clone https://github.com/pocketbase/pocketbase /usr/local/src/pocketbase)
 	cd /usr/local/src/pocketbase/examples/base && go build -o pocketbase
 	cp /usr/local/src/pocketbase/examples/base/pocketbase /usr/local/bin/pocketbase
+	$(call build_apk_cleanup, .build-pocketbase)
+
 #   PocketBase has a .gorelease.yml - but really just does same as above
-#	GOBIN=/usr/local/bin go install github.com/goreleaser/goreleaser@latest
-#	cd /usr/local/src/pocketbase && goreleaser release --snapshot --rm-dist
+#	   GOBIN=/usr/local/bin go install github.com/goreleaser/goreleaser@latest
+#	   cd /usr/local/src/pocketbase && goreleaser release --snapshot --rm-dist
 
 # "inline" HTML that is used as default homepage for webservices, 
 #    just single file that loads remote image

@@ -11,20 +11,21 @@ mqtt: $(DEFAULT_MQTT)
 MQTT_OPTS ?= -v -c /app/mosquitto/mosquitto.conf
 mosquitto: /usr/sbin/mosquitto /app/mosquitto/mosquitto.conf
 	$(info mosquitto starting)
-	$(shell /usr/sbin/mosquitto $(MQTT_OPTS))
+	/usr/sbin/mosquitto $(MQTT_OPTS)
 	$(warning mosquitto stopped)
 
-.PHONY: apks-mosquitto
-apks-mosquitto:
-	$(call apk_add, mosquitto mosquitto-doc mosquitto-clients mqttui) 
+.PRECIOUS: /usr/sbin/mosquitto
+/usr/sbin/mosquitto:
+	$(call apk_add, mosquitto mosquitto-doc mosquitto-clients mqttui-bash-completion mqttui) 
 
-/usr/sbin/mosquitto: apks-mosquitto
-
+.PRECIOUS: /usr/sbin/mosquitto
 /app/mosquitto/mosquitto.conf: /usr/sbin/mosquitto
 	mkdir -p /app/mosquitto
-	cp -n /etc/mosquitto/mosquitto.conf /etc/mosquitto/original.conf
-	$(file >/etc/mosquitto/mosquitto.conf,$(mosquitto_conf_default)) 
 	cp -n /etc/mosquitto/* /app/mosquitto
+	$(file >/app/mosquitto/mosquitto.conf,$(mosquitto_conf_default)) 
+	chmod -R a+r /app/mosquitto
+#	cp -n /etc/mosquitto/mosquitto.conf /etc/mosquitto/original.conf
+
 
 define mosquitto_conf_default
 # Config file for mosquitto
@@ -216,8 +217,8 @@ define mosquitto_conf_default
 # of packets being sent.
 #set_tcp_nodelay false
 
-# Time in seconds between updates of the $SYS tree.
-# Set to 0 to disable the publishing of the $SYS tree.
+# Time in seconds between updates of the $$SYS tree.
+# Set to 0 to disable the publishing of the $$SYS tree.
 #sys_interval 10
 
 # The MQTT specification requires that the QoS of a message delivered to a
@@ -480,11 +481,11 @@ listener 1883 0.0.0.0
 # syslog uses the userspace syslog facility which usually ends up
 # in /var/log/messages or similar.
 #
-# topic logs to the broker topic '$SYS/broker/log/<severity>',
+# topic logs to the broker topic '$$SYS/broker/log/<severity>',
 # where severity is one of D, E, W, N, I, M which are debug, error,
 # warning, notice, information and message. Message type severity is used by
 # the subscribe/unsubscribe log_types and publishes log messages to
-# $SYS/broker/log/M/susbcribe or $SYS/broker/log/M/unsubscribe.
+# $$SYS/broker/log/M/susbcribe or $$SYS/broker/log/M/unsubscribe.
 #
 # The file destination requires an additional parameter which is the file to be
 # logged to, e.g. "log_dest file /var/log/mosquitto.log". The file will be
@@ -629,7 +630,7 @@ allow_anonymous true
 #
 # If using bridges with usernames and ACLs, connection messages can be allowed
 # with the following pattern:
-# pattern write $SYS/broker/connection/%c/state
+# pattern write $$SYS/broker/connection/%c/state
 #
 # pattern [read|write|readwrite] <topic>
 #
@@ -759,7 +760,7 @@ allow_anonymous true
 
 # If set to true, publish notification messages to the local and remote brokers
 # giving information about the state of the bridge connection. Retained
-# messages are published to the topic $SYS/broker/connection/<clientid>/state
+# messages are published to the topic $$SYS/broker/connection/<clientid>/state
 # unless the notification_topic option is used.
 # If the message is 1 then the connection is active, or 0 if the connection has
 # failed.
@@ -768,7 +769,7 @@ allow_anonymous true
 
 # Choose the topic on which notification messages for this bridge are
 # published. If not set, messages are published on the topic
-# $SYS/broker/connection/<clientid>/state
+# $$SYS/broker/connection/<clientid>/state
 #notification_topic
 
 # Set the client id to use on the remote end of this bridge connection. If not

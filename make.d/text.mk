@@ -40,6 +40,7 @@ newsboat: /app/newsboat/awesome-rss-feeds/README.md
 
 # keep a copy of _unloaded_ RSS for for use with 'newsboat -I <file>' to import
 # feeds in _local_ users - Mikrotik URL are only default RSS feeds.
+.PRECIOUS: /app/newsboat/awesome-rss-feeds/README.md
 /app/newsboat/awesome-rss-feeds/README.md:
 	$(shell mkdir -p /app/newsboat/awesome-rss-feeds)
 	wget https://github.com/plenaryapp/awesome-rss-feeds/archive/refs/heads/master.zip -O /app/newsboat/awesome-rss.zip

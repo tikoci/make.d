@@ -1,42 +1,41 @@
 ## ** MIDI **
 # > just `midimonster` but it more than MIDI 
 
-.PHONY: midimonster 
-# "midimonster" service target
+.PHONY: midimonster
 MIDI_CONFIG ?= rtpmidi-mqtt.cfg
 MIDI_OPTS ?=
-MIDI_LOG_OPTS ?= 2>&1 | logger -t midimonster
-midimonster: /usr/local/bin/midimonster /usr/local/bin/lua 
+MIDI_EXTRA_APKS ?= alsa-lib-dev jack-dev libevdev-dev python3 lua5.3 lua5.3-libs 
+# todo: adding logging is tricker, since logger needs 
+# todo: but this works to send to local syslogd - but easier cause it to background
+# MIDI_LOG_OPTS ?= 2>&1 | logger -t midimonster
+midimonster: /usr/bin/python3 /usr/local/bin/midimonster 
 	$(info midimonster starting)
-	/usr/local/bin/midimonster /app/midimonster/maps/$(MIDI_CONFIG) $(MIDI_OPTS) $(MIDI_LOG_OPTS) 
-# TODO: adding logging is tricker, since logger needs 
-# + "" at end of above, but in defaults that won't work with that
-	$(warning midimonster stopped)
-	exit 1
+	/usr/local/bin/midimonster /app/midimonster/maps/$(MIDI_CONFIG) $(MIDI_OPTS) 
 
-midimonster-apks:
-	$(call apk_add alsa-lib jack libevdev lua5.3-libs lua5.3 lua5.3-doc python3)
-
-# todo: alpine should link the version specifc ones, dunno...
-/usr/local/bin/lua: midimonster-apks
-	$(shell ln -s /usr/bin/lua5.3 /usr/local/bin/lua)
+# todo: alpine should link the version specifc ones, dunno
+#       but allows 'lua' with 'lua5.3' at CLI
+#/usr/local/bin/lua:
+#	$(call apk_add, lua5.3 lua5.3-doc lua5.3-libs)
+#	$(shell ln -s /usr/bin/lua5.3 /usr/local/bin/lua)
 
 # This is more interesting... we build midimonster inside the container, if needed
 # note: this is NOT a .PHONY - we actually want to check if FILE EXIST - here 'midimonster'
-# note2: .ONESHELL avoids parellization of individual tasks within when using "cd", but may not be needed
-#.ONESHELL: /usr/local/bin/midimonster
+#       if not... get tools, build it, and remove build-only tools
+.PRECIOUS: /usr/local/bin/midimonster 
 /usr/local/bin/midimonster:
-# add Linux developer tools & libraries needed by `midimonster`
-	$(call apk_add, build-base \
-	        linux-headers \
-			alpine-sdk \
-	        lua5.3-dev \
-	        jack-dev \
-	        alsa-lib-dev \
-	        openssl-dev \
-	        libevdev-dev \
-	        python3-dev \
-	        git)
+# these APKs use at runtime for midimonster
+	$(call apk_add, $(MIDI_EXTRA_APKS) openssl)
+# Linux dev tools/libraries used to build only (and removed)
+	$(call build_apk_addgroup, .build-midimonster,  \
+		build-base \
+		linux-headers \
+		alpine-sdk \
+		lua5.3-dev \
+		jack-dev \
+		alsa-lib-dev \
+		openssl-dev \
+		libevdev-dev \
+		python3-dev)
 # use `git` to fetch `midimonster` source code from GitHub
 	$(shell git clone https://github.com/cbdevnet/midimonster.git /usr/local/src/midimonster)
 	$(file >/usr/local/src/midimonster/patches,$(midimonster_alpine_patches))
@@ -47,10 +46,10 @@ midimonster-apks:
 # in order to work on Alpine, `midimonster` need minor changes
 # to the source code, there are stored `diff` file and
 # need to be apply'ed to GitHub downloaded source to work with Alpine
-# NOTE: the patch file is define'd below
+# note: the patch file is define'd below
 	cd /usr/local/src/midimonster 
 	git apply /usr/local/src/midimonster/patches
-# Now build `midimonster` 
+# actually build `midimonster` 
 # ... and set file paths that get compiled into `midimonster`
 #     needed to find .so libs on "real" container.
 	export PREFIX="/usr/local" && \                                                                      
@@ -66,7 +65,9 @@ midimonster-apks:
 	cp /usr/local/src/midimonster/backends/*.md /app/midimonster/docs
 	cp /usr/local/src/midimonster/*.md /app/midimonster 
 	cp /usr/local/src/midimonster/*.txt /app/midimonster 
-
+# safely remove the build tools we installed
+	$(call build_apk_cleanup, .build-midimonster)
+	$(info done building midimonster)
 
 # file above is defined here...
 define midimonster_rtpmidi_mqtt_cfg
