@@ -11,13 +11,13 @@ WORKDIR /app
 
 # Install the absolute mininum packages in Dockerfile
 # Since packages may be install, keep a package index
-RUN apk update && apk add make git nano 
+RUN apk update && apk add make git nano
 
-# install the Makefile "init" system 
+# install the Makefile "init" system
 COPY Makefile /app/Makefile
 COPY README.md /app/readme.md
 COPY make.d/* /app/make.d/
-COPY VERSION /VERSION 
+COPY VERSION /VERSION
 COPY .gitignore /app/.gitignore
 
 # install a curated set of Alpine packages
@@ -40,7 +40,7 @@ EXPOSE 8080
 
 # IMPORTANT: CMD and ENTRYPOINT must use array syntax - otherwise args don't work
 
-# make is entrypoint - see README.md for details on this approach 
+# make is entrypoint - see README.md for details on this approach
 ENTRYPOINT ["make", "--debug=a", "--jobs=1024", "--no-builtin-rules", "--warn-undefined-variables"]
 # note: the "-j 10" is the job limit for parallel jobs, by default its 2
 #       but as an "init" process

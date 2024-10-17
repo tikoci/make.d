@@ -1,7 +1,7 @@
 ## ** EXTRA TOOLS **
 # > non-essential, or less frequently used tools not included in base make.d
 
-.PHONY: all-extras 
+.PHONY: all-extras
 all-extras: openapi-tui nmap systeroid
 
 .PHONY: openapi-tui
@@ -10,7 +10,7 @@ ifeq ($(UNAME_MACHINE),armv7l)
 	$(warning "Skipping openapi-tui on armhf architecture")
 else
 	$(call apk_add, openapi-tui)
-endif 
+endif
 
 .PHONY: nmap
 nmap:
@@ -20,13 +20,14 @@ nmap:
 systeroid:
 	$(call apk_add, systeroid systeroid systeroid-tui systeroid-tui-doc)
 
-# note: example of building rust using cargo, and removing rust build after 
+# note: example of building rust using cargo, and removing rust build after
 .PHONY: cute-tui
 cute-tui: /usr/local/bin/cute
 
-.PRECIOUS: /usr/local/bin/cute 
-/usr/local/bin/cute:       
+.PRECIOUS: /usr/local/bin/cute
+/usr/local/bin/cute:
+	$(warning CuTE-tui uses rust/cargo to build it self - this is too much on RB1100, likely any armv7 system)
 	$(call build_apk_addgroup, .cargo-cute-tui, rust cargo openssl openssl-dev)
-	cargo install CuTE-tui                                                
-	cp ~/.cargo/bin/cute /usr/local/bin      
+	cargo install CuTE-tui
+	cp ~/.cargo/bin/cute /usr/local/bin
 	$(call build_apk_cleanup, .cargo-cute-tui)

@@ -10,7 +10,7 @@ init: base-apks base-files add-users
 	$(info init run)
 
 .PHONY: base-apks
-# ** base-apks ** installs the core packages used by all other packages 
+# ** base-apks ** installs the core packages used by all other packages
 base-apks:
 	$(info running on $(UNAME_MACHINE))
 	apk add --no-cache \
@@ -48,22 +48,22 @@ add-users:
 #	chmod 600 ~sysop/.ssh/authorized_keys
 #	chown sysop ~sysop/.ssh
 #	chown sysop ~sysop/.ssh/id_rsa
-#	chown sysop ~sysop/.ssh/authorized_keys	
+#	chown sysop ~sysop/.ssh/authorized_keys
 
 .PHONY: base-files
 # ** base-files ** files set upon initalization of container
-# note: all file targets must be listed as "base-files" 
+# note: all file targets must be listed as "base-files"
 base-files: replace-motd /usr/local/bin/mk /usr/local/bin/edit /usr/share/bash-completion/helpers/patch_mk_bash_completions
 
 
 .PHONY: replace-motd
 replace-motd:
-	$(shell cat /VERSION > /etc/motd) 
-	$(shell echo "" >> /etc/motd) 
-	$(file >>/etc/motd,$(etc_motd)) 
+	$(shell cat /VERSION > /etc/motd)
+	$(shell echo "" >> /etc/motd)
+	$(file >>/etc/motd,$(etc_motd))
 
 /usr/local/bin/mk:
-	$(file >$@,$(usr_local_bin_mk)) 
+	$(file >$@,$(usr_local_bin_mk))
 	chmod +x $@
 
 # add bash completions for the "mk" alias command, added to allow "make commands" from any directory
@@ -73,7 +73,7 @@ replace-motd:
 	patch /usr/share/bash-completion/completions/mk /usr/share/bash-completion/helpers/patch_mk_bash_completions
 
 /usr/local/bin/edit:
-	$(file >$@,$(usr_local_bin_edit)) 
+	$(file >$@,$(usr_local_bin_edit))
 	chmod +x $@
 
 
@@ -81,12 +81,12 @@ replace-motd:
 define etc_motd
 
 
-███╗   ███╗ █████╗ ██╗  ██╗███████╗   ██████╗ 
+███╗   ███╗ █████╗ ██╗  ██╗███████╗   ██████╗
 ████╗ ████║██╔══██╗██║ ██╔╝██╔════╝   ██╔══██╗
 ██╔████╔██║███████║█████╔╝ █████╗     ██║  ██║
 ██║╚██╔╝██║██╔══██║██╔═██╗ ██╔══╝     ██║  ██║
 ██║ ╚═╝ ██║██║  ██║██║  ██╗███████╗██╗██████╔╝
-╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝╚═════╝ 
+╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝╚═════╝
 
 For help, use `man <command>`, or `man -k <search>`.
 
@@ -97,20 +97,20 @@ Using `bash`, hit TAB twice after `mk` shows recipes to make.
 Most configuration files stored under /app, use `edit <file>`.
 The default `nano` editor supports basic colors and syntax checks.
 
-See https://github.com/tikoci/make.d for latest info.  
-For more help, use `mk help`, and `mk commentary`.  
+See https://github.com/tikoci/make.d for latest info.
+For more help, use `mk help`, and `mk commentary`.
 
 endef
 
 define etc_motd_first
 
 
-███╗   ███╗ █████╗ ██╗  ██╗███████╗   ██████╗ 
+███╗   ███╗ █████╗ ██╗  ██╗███████╗   ██████╗
 ████╗ ████║██╔══██╗██║ ██╔╝██╔════╝   ██╔══██╗
 ██╔████╔██║███████║█████╔╝ █████╗     ██║  ██║
 ██║╚██╔╝██║██╔══██║██╔═██╗ ██╔══╝     ██║  ██║
 ██║ ╚═╝ ██║██║  ██║██║  ██╗███████╗██╗██████╔╝
-╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝╚═════╝ 
+╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝╚═════╝
 
 For help, use `man <command>`, or `man -k <search>`.
 
@@ -126,7 +126,7 @@ See https://github.com/tikoci/make.d for more info.
 endef
 
 # todo: support some debug mode to add -d to make
-MK_FLAGS ?= 
+MK_FLAGS ?=
 define usr_local_bin_mk
 #!/bin/sh
 SAVEDIR=`pwd`
@@ -150,16 +150,16 @@ define patch_mk_bash_completions
 -    _comp_initialize -s -- "$$@" || return
 +    _comp_initialize -s -- "$$@ -f /app/Makefile" || return
 +    # note: cheat for make.d's mk command to force the makefile to make /app/Makefile for bash
- 
+
      local makef makef_dir=("-C" ".") i
- 
+
 @@ -169,6 +170,6 @@
- 
+
      fi
  } &&
 -    complete -F _comp_cmd_make make gmake gnumake pmake colormake bmake
-+    complete -F _comp_cmd_make mk 
- 
++    complete -F _comp_cmd_make mk
+
  # ex: filetype=sh
 endef
 

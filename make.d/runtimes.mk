@@ -19,22 +19,22 @@ golang: /usr/bin/go
 #	GOBIN=/usr/local/bin go install github.com/goreleaser/goreleaser@latest
 #	GOBIN=/usr/local/bin go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
 
-.PHONY: python3 
+.PHONY: python3
 python3: /usr/bin/python3
 .PRECIOUS: /usr/bin/python3
-/usr/bin/python3: 
+/usr/bin/python3:
 	$(call apk_add, python3 python3-doc py3-pip py3-pip-bash-completion py3-pip-doc)
 
 .PHONY: rust
-rust: 
+rust:
 	$(call apk_add, rust cargo openssl openssl-dev)
 
-.PHONY: erlang 
+.PHONY: erlang
 # also inlcudes elixir and gleam
 erlang:
 	$(call apk_add, erlang erlang-doc rebar3 elixir elixir-doc gleam)
 
-.PHONY: ruby 
+.PHONY: ruby
 ruby:
 	$(call apk_add, ruby ruby-doc ruby-rake ruby-rake-doc)
 
@@ -42,9 +42,13 @@ ruby:
 crystal:
 	$(call apk_add, crystal crystal-bash-completion crystal-doc)
 
-.PHONY: build-core 
+.PHONY: build-core
 build-core:
-	$(call app_add, build-base linux-headers alpine-sdk) 
+	$(call apk_add, build-base linux-headers gdb)
+
+.PHONY: alpine-sdk
+alpine-sdk:
+	$(call apk_add, alpine-sdk gdb)
 
 # NOTE: This crashes ENTIRE Docker Desktop with error never seen (and restarts everything).
 #       Was trying to build Eralng like it's image does for lorawan-server (since Alpine's erlang is too new)
@@ -111,4 +115,4 @@ build-core:
 #		$$runDeps \
 #		lksctp-tools \
 #		ca-certificates \
-#	&& apk del .fetch-deps .build-deps 
+#	&& apk del .fetch-deps .build-deps

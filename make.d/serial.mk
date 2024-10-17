@@ -3,8 +3,8 @@
 
 # NOTE: these are stubs that installs the packages, no curation or start yet
 
-.PHONY: all-serial 
-all-serial: /usr/bin/socat /usr/bin/expect /usr/bin/python3 
+.PHONY: all-serial
+all-serial: /usr/bin/socat /usr/bin/expect /usr/bin/python3
 	$(call apk_add, py3-pyserial py3-pyserial-pyc)
 
 .PRECIOUS: /usr/bin/socat

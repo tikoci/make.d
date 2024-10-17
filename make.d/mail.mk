@@ -22,11 +22,11 @@ dovecot:
 
 .PHONY: imap
 # todo: use /app and start...
-imap: 
+imap:
 	$(warning mail recipes just install packages)
 	$(call apk_add, imap)
 
-.PHONY: goimapnotify 
+.PHONY: goimapnotify
 goimapnotify:
 # todo: use /app (and start?)
 # untested... need IMAP working first, but purpored simplier IMAP listener

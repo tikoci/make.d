@@ -6,9 +6,9 @@
 SSHD_OPTS ?= -F -R
 sshd:
 	$(info dropbear sshd starting)
-	/usr/sbin/dropbear $(SSHD_OPTS) 
+	/usr/sbin/dropbear $(SSHD_OPTS)
 
-.PHONY: syslogd 
+.PHONY: syslogd
 # "syslogd" service target
 SYSLOGD_OPTS ?= -n -S -s 10000
 syslogd:

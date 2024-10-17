@@ -14,8 +14,12 @@ commentary: notes-container-use notes-tips notes-future-fixes notes-future-recip
 	$(info ... last tip: targets can be combines, in help so `mk help commentary` run boths)
 	$(info )
 
-# help function that gets a list of man pages 
+# help function that gets a list of man pages
 list_manpages = apropos -s $(1) .
+
+.PHONY: help-job-control 
+help-job-control:
+	man bash | less -p "^JOB CONTROL"
 
 .PHONY: list-recipes
 list-recipes:
@@ -47,9 +51,11 @@ notes-tips:
 	$(info - manpages too - use man <command>, or man -k <topic>)
 	$(info - for viewing in color with paging use `mdless` (& `mdcat`))
 	$(info - the "shell jobs" cmds can be useful, see JOB CONTROL section in `man bash`)
-	$(info   ... or try ^Z from longer make to "suspend", then `bg %1` to background it ) 
-	$(info - /app is a `git` repo, even if not used to "checkin" - can see diff's from defaults) 
-	$(info   ... use `git status` to see all changes, `git diff <file>` for one file ) 
+	$(info   ... or try ^Z from longer make to "suspend", then `bg %1` to background it )
+	$(info - /app is a `git` repo, even if not used to "checkin" - can see diff's from defaults)
+	$(info   ... use `git status` to see all changes, `git diff <file>` for one file )
+	$(info - sshd can be used with user `sysop`, password `changeme`)
+	$(info   but `sysop` is not an admin/root, so mainly for running UNIX tools via /system/ssh-exec)
 
 
 .PHONY: notes-container-use
@@ -58,7 +64,7 @@ notes-container-use:
 	$(info - Create a new container using this image, no mount or env are strickly needed)
 	$(info - In RouterOS, using dst-nat for incoming ports to make.d)
 	$(info   & src-nat outbound to enable internet is likely easiest config)
-	$(info - /container's cmd= is used to control what services _actually_ run.) 
+	$(info - /container's cmd= is used to control what services _actually_ run.)
 	$(info   To run daemons, just set `cmd=` with recipes to start like "nodered" or "mqtt".)
 	$(info  `make` is not picky on order, recipes and KEY=val vars can be mixed.)
 	$(info - To test in /container/shell first, use `mk <recipe> [<recipe>]... &`, note ampersand)
@@ -66,21 +72,23 @@ notes-container-use:
 
 
 .PHONY: notes-future-fixes
-# just for fun, targets can just output text, here "todo" 
-notes-future-fixes: 
+# just for fun, targets can just output text, here "todo"
+notes-future-fixes:
 	$(warning ** META BUGS **)
-	$(info - proper README.md at least) 
-	$(info   and some better help system, perhaps a 'helpme' command?)
-	$(info   plus routeros-side script/config/examples to use make.d services) 
-	$(info - syslogd is wired up, but more pkgs use, and vars for remote syslog) 
-	$(info - default "sysop" user is untest... generally dealing users+permissions+keys)
+	$(info - proper README.md at least)
+	$(info   and some better help system, perhaps a `helpme` command, similar to `mk`)
+	$(info - make note-* $$(info blocks) into define's w/ markdown, mdless to display)
+	$(info - bash completions work, but outputs annoying cgroup error in some YBD case)
+	$(info - routeros-side script/config/examples to use make.d services)
+	$(info - syslogd is wired up, but more pkgs use, and vars for remote syslog)
+	$(info - default "sysop" user is created for like ssh, but needs more setup/thought)
 	$(info - test/cleanup invoking browser from CLI, at least via shh)
 	$(info - need some tools to test/use RADIUS from user-manager)
 	$(info - more meta data and package dep tracking, TBD method)
-	$(info - sometimes git is slow, perhaps git config --global http.postBuffer 157286400 ?)
+	$(info - $$(file X) should be own target, not part of a recipes )
 
 .PHONY: notes-future-recipes
-notes-future-recipes:	
+notes-future-recipes:
 	$(warning *** RECIPES IN THE WORKS **)
 	$(info lora - [priority] some small LoRa network server ... lorawan-server? chripstack?)
 	$(info dns - currently blocky and bind9, but add unbound just round out)
@@ -97,11 +105,12 @@ notes-future-recipes:
 notes-implementation:
 	$(warning ** BUILDING NEW RECIPES **)
 	$(info - GNU make manual is excellent!  Search that first.)
-	$(info   Questions like WTF is .ONESHELL or two-pass variable eval will be answered.) 
+	$(info   Questions like WTF is .ONESHELL or two-pass variable eval will be answered.)
 	$(info   ...in terminal, use `mk help` once, then `info make` to view GNU make manual)
-	$(info   ...via web: https://www.gnu.org/software/make/manual ) 
-	$(info - Check *.mk for examples - just adding a new .mk file to /app/make.d add them to `mk`) 
-	$(info   ...so cut-and-paste may work to get you started) 
+	$(info   ...via web: https://www.gnu.org/software/make/manual )
+	$(info - Check *.mk for examples - just adding a new .mk file to /app/make.d add them to `mk`)
+	$(info   ...so cut-and-paste may work to get you started)
+	$(info - Makefiles use TAB for indentation - using spaces is invalid + cause errors)
 	$(info - All paths used must be FULLY QUALIFIED - do not expect PATH to work in any target)
 	$(info   & also CRITICAL all new recipes have .PHONY if they are not real files!)
 	$(info - .PRECIOUS is used when a target file is installed by a package - to prevent make from del on failure!)
@@ -111,7 +120,7 @@ notes-implementation:
 	$(info - `$$(info|warning|error text)` are builtin functions - but "error" will ALSO terminate)
 	$(info - Do not overuse "quotes" when in variables - subtly called process args can get messed up)
 	$(info - $$(varname) are make variables, while "double dollars" $$$$varname is for shell variables inside a recipe)
-	$(info   Backslash \ is NOT an escape in make! In code, above uses 4 dollars $$$$$$$$ (and 8 in Makefile here)) 
+	$(info   Backslash \ is NOT an escape in make! In code, above uses 4 dollars $$$$$$$$ (and 8 in Makefile here))
 	$(info   And, yes, escaping – patch files need to some $$$$ love too, otherwise patch will fail)
 
 # MAN SECTIONS

@@ -3,7 +3,7 @@
 #       ... while goal is all services wait in foreground in make.d - postgres violates it.
 # note: it's expected for larger database needs, a seperate instance should be used & postgres is picky
 
-.PHONY: all-databases 
+.PHONY: all-databases
 all-databases: redis sqlite
 
 # note: all-databases refers to file-based, no service datas - all-* should packages, not services
@@ -29,9 +29,9 @@ pqsl:
 	chown -R postgres /run/postgresql
 
 # needed? .ONESHELL: /app/postgres/data/postgresql.conf
-.PRECIOUS: /app/postgres/data/postgresql.conf 
+.PRECIOUS: /app/postgres/data/postgresql.conf
 /app/postgres/data/postgresql.conf: /usr/bin/pg_ctl /run/postgresql
-	mkdir -p /app/postgres/data 
+	mkdir -p /app/postgres/data
 	chgrp -R postgres /app/postgres
 	chown -R postgres /app/postgres
 	usermod postgres -d /app/postgres
@@ -41,7 +41,7 @@ pqsl:
 #	su postgres -c "echo unix_socket_directories=\'/app/postgres/run\' >> /app/postgres/data/postgresql.conf"
 
 .PHONY: sqlite
-sqlite: /usr/bin/sqlite3 
+sqlite: /usr/bin/sqlite3
 .PRECIOUS: /usr/bin/sqlite3
 /usr/bin/sqlite3:
 	$(call apk_add, sqlite sqlite-doc sqlite-tools)

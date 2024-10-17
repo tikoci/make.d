@@ -2,7 +2,7 @@
 # > old BSD game collections, play-games provides "arcade" TUI
 
 .PHONY: all-games
-all-games: 
+all-games:
 	$(call apk_add_testing, bsd-games bsd-games-doc nbsdgames nbsdgames-doc words-en)
 
 .PHONY: play-games
@@ -19,7 +19,7 @@ play-mines: /usr/bin/mines
 
 .PHONY: play-atc
 play-atc: /usr/bin/atc
-	atc	
+	atc
 
 .PRECIOUS: /usr/bin/nbsdgames
 /usr/bin/nbsdgames:
@@ -34,5 +34,5 @@ play-atc: /usr/bin/atc
 	$(call apk_add_testing, bsd-games bsd-games-doc nbsdgames nbsdgames-doc)
 
 .PRECIOUS: /usr/bin/atc
-/usr/bin/atc: 
+/usr/bin/atc:
 	$(call apk_add_testing, bsd-games bsd-games-doc nbsdgames nbsdgames-doc)

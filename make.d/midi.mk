@@ -1,16 +1,16 @@
 ## ** MIDI **
-# > just `midimonster` but it more than MIDI 
+# > just `midimonster` but it more than MIDI
 
 .PHONY: midimonster
 MIDI_CONFIG ?= rtpmidi-mqtt.cfg
 MIDI_OPTS ?=
-MIDI_EXTRA_APKS ?= alsa-lib-dev jack-dev libevdev-dev python3 lua5.3 lua5.3-libs 
-# todo: adding logging is tricker, since logger needs 
+MIDI_EXTRA_APKS ?= alsa-lib-dev jack-dev libevdev-dev python3 lua5.3 lua5.3-libs
+# todo: adding logging is tricker, since logger needs
 # todo: but this works to send to local syslogd - but easier cause it to background
 # MIDI_LOG_OPTS ?= 2>&1 | logger -t midimonster
-midimonster: /usr/bin/python3 /usr/local/bin/midimonster 
+midimonster: /usr/bin/python3 /usr/local/bin/midimonster
 	$(info midimonster starting)
-	/usr/local/bin/midimonster /app/midimonster/maps/$(MIDI_CONFIG) $(MIDI_OPTS) 
+	/usr/local/bin/midimonster /app/midimonster/maps/$(MIDI_CONFIG) $(MIDI_OPTS)
 
 # todo: alpine should link the version specifc ones, dunno
 #       but allows 'lua' with 'lua5.3' at CLI
@@ -21,7 +21,7 @@ midimonster: /usr/bin/python3 /usr/local/bin/midimonster
 # This is more interesting... we build midimonster inside the container, if needed
 # note: this is NOT a .PHONY - we actually want to check if FILE EXIST - here 'midimonster'
 #       if not... get tools, build it, and remove build-only tools
-.PRECIOUS: /usr/local/bin/midimonster 
+.PRECIOUS: /usr/local/bin/midimonster
 /usr/local/bin/midimonster:
 # these APKs use at runtime for midimonster
 	$(call apk_add, $(MIDI_EXTRA_APKS) openssl)
@@ -40,19 +40,19 @@ midimonster: /usr/bin/python3 /usr/local/bin/midimonster
 	$(shell git clone https://github.com/cbdevnet/midimonster.git /usr/local/src/midimonster)
 	$(file >/usr/local/src/midimonster/patches,$(midimonster_alpine_patches))
 # create directories
-	$(shell mkdir -p /app/midimonster/maps) 
-	$(shell mkdir -p /app/midimonster/docs) 
+	$(shell mkdir -p /app/midimonster/maps)
+	$(shell mkdir -p /app/midimonster/docs)
 	$(file >/app/midimonster/maps/rtpmidi-mqtt.cfg,$(midimonster_rtpmidi_mqtt_cfg))
 # in order to work on Alpine, `midimonster` need minor changes
 # to the source code, there are stored `diff` file and
 # need to be apply'ed to GitHub downloaded source to work with Alpine
 # note: the patch file is define'd below
-	cd /usr/local/src/midimonster 
+	cd /usr/local/src/midimonster
 	git apply /usr/local/src/midimonster/patches
-# actually build `midimonster` 
+# actually build `midimonster`
 # ... and set file paths that get compiled into `midimonster`
 #     needed to find .so libs on "real" container.
-	export PREFIX="/usr/local" && \                                                                      
+	export PREFIX="/usr/local" && \
 	    export DEFAULT_CFG="/etc/monster.cfg" && \
 	    export PLUGINS="/usr/local/lib/midimonster" && \
 	    make -f /usr/local/src/midimonster/Makefile clean && \
@@ -63,8 +63,8 @@ midimonster: /usr/bin/python3 /usr/local/bin/midimonster
 # copy files from "real" locations to /app for easy-of-mounting
 	cp -n /usr/local/share/midimonster/* /app/midimonster/maps
 	cp /usr/local/src/midimonster/backends/*.md /app/midimonster/docs
-	cp /usr/local/src/midimonster/*.md /app/midimonster 
-	cp /usr/local/src/midimonster/*.txt /app/midimonster 
+	cp /usr/local/src/midimonster/*.md /app/midimonster
+	cp /usr/local/src/midimonster/*.txt /app/midimonster
 # safely remove the build tools we installed
 	$(call build_apk_cleanup, .build-midimonster)
 	$(info done building midimonster)
@@ -126,9 +126,9 @@ index fe74a80..5ad8e90 100644
 --- a/backends/jack.c
 +++ b/backends/jack.c
 @@ -12,7 +12,7 @@
- 
+
  #define JACKEY_SIGNAL_TYPE "http://jackaudio.org/metadata/signal-type"
- 
+
 -#ifdef __APPLE__
 +#if defined(__APPLE__) || defined(LINUX_ALPINE)
  	#ifndef PTHREAD_MUTEX_ADAPTIVE_NP

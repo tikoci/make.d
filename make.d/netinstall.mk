@@ -1,5 +1,5 @@
 ## ** NETINSTALL **
-# > Most interesting, recurisive "make.d" 
+# > Most interesting, recurisive "make.d"
 
 # NOTE: this download the ammo74/netinstall Makefile, and use $(MAKE) which calls another Makefile
 
@@ -11,4 +11,4 @@ NETINSTALL_MAKEFILE_URL ?= https://raw.githubusercontent.com/tikoci/netinstall/r
 netinstall:
 	$(shell mkdir -p /app/netinstall)
 	$(shell wget $(NETINSTALL_MAKEFILE_URL) -O /app/netinstall/Makefile)
-	cd /app/netinstall && $(MAKE) -j 16 -f /app/netinstall/Makefile 
+	cd /app/netinstall && $(MAKE) -j 16 -f /app/netinstall/Makefile
