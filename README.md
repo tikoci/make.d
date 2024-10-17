@@ -1,10 +1,10 @@
 > **NOTE**
->  This is experimental concept.  Not for production use.
+>  This is an experimental concept.  Not for production use.
 >  _Even this README is a work in progress._
 
 ```
 define etc_motd
-> make.d 0.1.165 alpha
+> make.d 0.1.167 alpha
 
 ███╗   ███╗ █████╗ ██╗  ██╗███████╗   ██████╗
 ████╗ ████║██╔══██╗██║ ██╔╝██╔════╝   ██╔══██╗
@@ -23,49 +23,62 @@ Using `/container/shell`...
   The default `nano` editor supports basic colors and syntax checks.
 
 For services "daemons", make.d uses `/app/Makefile` to run them
-  Deamons are just "build targets", provided as `cmd=` to `/container`
+  Daemons are just "build targets", provided as `cmd=` to `/container`
   e.g.  `/container add tag="ammo74/make.d" cmd="midimonster mqtt"`,
   make.d relies on `make`'s parallelization & "reaping" to run them both
 
-See https://github.com/tikoci/make.d for latest info.
+See https://github.com/tikoci/make.d for the latest info.
 For help, use `mk help` or `mk commentary` for release notes.
 Linux man pages are also available: `man <command>` or `man -k <topic>`
 
 endef
 ```
 
-## make.d Configuration
+## make.d Container
 
-_RouterOS containers setup and general usage are not covered._
+_RouterOS container setup and general usage are not covered._
 
 To bring up make.d, use `/container add tag="ammo74/make.d"` with VETH that allows
 outbound internet, and any ports "exposed" by any service _recipes_ allowed inbound
-is what's required.  The specific config beyond that is highly dependant on use cases.
+is what's required.  The specific config beyond that is highly dependent on use cases.
 
 By default, make.d brings up `syslogd`, `lighttpd`, and Dropbear `sshd` if **nothing** is set
 in `cmd=` nor `entrypoint=` (and no env's).  A webpage will shown on port 80, 
 and one non-root user `sysop` (_password_ `changeme`) for use with SSH.
 
 To run no services, set make.d container's `cmd=loop`.  This is useful for experimenting,
-since `/container/shell` can be used to access make.d as `root` to run things.  
+since `/container/shell` allows access to make.d as `root` to run things.  
 
-> Since `make` is the entrypoint, `cmd` is assume to be target in `/app/Makefile`.
+> Since `make` is the entrypoint, `cmd` is assumed to be a target in `/app/Makefile`.
 > By design, if `make` exits, the container stops as the prevents errors from going unnoticed –
-> `make` should succeeded or be waiting on some process to exit - just like default Alpine.
+> `make` should succeed, or be waiting on some process to exit - just like default Alpine.
 > So `loop` is a special target to keep `make /app/Makefile` waiting, on nothing. 
 > `run` is also a special target, that is `Dockerfile` default `cmd=`, and uses
-> a `SERVICES` env var to read the list of services (as alternative to modifying `cmd=`)
+> a `SERVICES` env var to read the list of services (as an alternative to modifying `cmd=`)
 > If `SERVICES` is not set in `/container/env` for make.d, then `Makefile` will use
 > a default value of "syslogd sshd http" — which is how the default config works.
+
+## About make.d Framework
+
+make.d is more a simple layer over Alpine's APK packages, than a new container.  
+Alpine has many packages, but not all are as regularized as other distros.
+So one fundamental _opinion_ is all configuration should like under `/app`,
+with configuration following through environment variables - not files.
+The other make.d framework principal is all "scripting" flow through a `Makefile`,
+to organize "shell code" than a bunch of `*.sh` files everywhere - leveraging `make`'s
+ability along with, now unwritten, conventions.
+
+> Also, nothing is RouterOS-specific other than perhaps packages and a few recipes.
+> The author's specific needs however are RouterOS /containers, thus the focus.  
 
 ## make.d Recipes
 
 Recipes are invoked using `mk` in `/container/shell`, or in `cmd=` to run at startup.  The recipes 
 are stored in `/app/make.d/*.mk`, and loaded by `/app/Makefile`.  
 
-> In the shell, the `mk` command added by make.d, wraps `make -f /app/Makefile`, 
+> In the shell, the `mk` command is added by make.d, wraps `make -f /app/Makefile`, 
 > to `make` can be called from **any directory**, and `mk` args are passed directly to
-> `/app/Makefile`.  So `mk`'s options matches `man make`.  
+> `/app/Makefile`.  So `mk`'s options match `man make`.  
 
 
 A specific list is
@@ -111,23 +124,23 @@ or applications like `lighttpd`.
 Service recipes are designed to be used on the `cmd=`
 to keep them running in the container.  For testing, shell job control can be used to
 start services temporally from `/container/shell`.  For example, to start `mosquitto` MQTT broker,
-using ampersand & after make it make it run background `mk <service_recipe> &`.  `man bash`.
+using ampersand & after make means run in the background: `mk <service_recipe> &`.  `man bash`.
 See `mk help-job-control` for details on shell job control.
 
 As more a proof-of-concept, not services in make.d will work out-of-the-box, but
-most were tacitly test to start.  It is recommend to look in /app/make.d/*.mk for
-any services you plan to use, most have some rough commentary on status. 
+most were tacitly tested to start.  Check the code in /app/make.d/*.mk for
+any services you plan to use – most have some rough commentary on status and/or usage. 
  _Some things may_ never _run on low mem/CPU devices - but that's not something anyone can fix_.  
- And various parts are half-based, like `/app` is a git repo, but nothing use it.  And some
-"receipes" just wrap `apk add`, where they should do more to move config under `/app`.
+ And various parts are half-based, like `/app` is a git repo, but nothing uses it.  And some
+"recipes" only wrap `apk add`, but do not move the package's config under `/app`.
 
 
 > In some cases, services can be compiled inside the /container if needed (albeit small things), 
-> with `/app/make.d/midi.mk` as example that loads needed tools to build, then
+> with `/app/make.d/midi.mk` as an example that loads tools to build, then
 > compiles [`midimonster`](https://midimonster.net) for the architecture, and finally
-> removes build tools to preseve disk space.  Internally, this uses `apk ... -virtual ...`.
+> removes build tools to preserve disk space.  Internally, this uses `apk ... -virtual ...`.
 > **More complex builds will crash most RouterOS devices**.  e.g. `mk cute-tui` (aka `mk stress-build-rust`) 
-> which uses Rust's `cargo`, and `mk pocketbase` which uses `go` – both will crash a RB1100Ahx4.
-> A set of "stress-*" targets are offered by `mk`, like `mk stress-everything` if that
+> which uses Rust's `cargo`, and `mk pocketbase` which uses `go` – both will crash a RB1100AHx4.
+> A set of "stress-*" targets are offered by `mk`, like `mk stress-everything` if that's
 > what you're looking to do.
 
