@@ -1,17 +1,17 @@
 ## *** RUNTIME ***
 # > Various programming langauage runtimes and interpreters, often dependancies for real recipes.
 
-.PHONY: all-runtimes
-all-runtimes: build-core golang nodejs python3 erlang ruby crystal
+.PHONY: tools-all-langs
+tools-all-langs: add-build-core add-golang add-nodejs add-python3 add-erlang add-ruby add-crystal add-rust
 
-.PHONY: nodejs
-nodejs: /usr/bin/node
+.PHONY: add-nodejs
+add-nodejs: /usr/bin/node
 .PRECIOUS: /usr/bin/node
 /usr/bin/node:
 	$(call apk_add, nodejs nodejs-doc npm npm-doc yarn)
 
-.PHONY: golang
-golang: /usr/bin/go
+.PHONY: add-golang
+add-golang: /usr/bin/go
 .PRECIOUS: /usr/bin/go
 /usr/bin/go:
 	$(call apk_add, go go-doc)
@@ -19,35 +19,46 @@ golang: /usr/bin/go
 #	GOBIN=/usr/local/bin go install github.com/goreleaser/goreleaser@latest
 #	GOBIN=/usr/local/bin go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
 
-.PHONY: python3
-python3: /usr/bin/python3
+.PHONY: add-python3
+add-python3: /usr/bin/python3
 .PRECIOUS: /usr/bin/python3
 /usr/bin/python3:
 	$(call apk_add, python3 python3-doc py3-pip py3-pip-bash-completion py3-pip-doc)
 
-.PHONY: rust
-rust:
+.PHONY: add-rust
+add-rust:
 	$(call apk_add, rust cargo openssl openssl-dev)
 
-.PHONY: erlang
+.PHONY: add-erlang
 # also inlcudes elixir and gleam
-erlang:
+add-erlang:
 	$(call apk_add, erlang erlang-doc rebar3 elixir elixir-doc gleam)
 
-.PHONY: ruby
-ruby:
+# requires cargo
+.PHONY: add-erlang-tui
+add-erlang-tui: /usr/local/bin/erldash
+.PRECIOUS: /usr/local/bin/erldash
+/usr/local/bin/erldash:
+	$(warning uses rust/cargo to build it self - this is too much on RB1100, likely any armv7 system)
+	$(call build_apk_addgroup, .cargo-erldash, rust cargo)
+	cargo install erldash
+	cp ~/.cargo/bin/erldash /usr/local/bin
+	$(call build_apk_cleanup, .cargo-erldash)
+
+.PHONY: add-ruby
+add-ruby:
 	$(call apk_add, ruby ruby-doc ruby-rake ruby-rake-doc)
 
-.PHONY: crystal
-crystal:
+.PHONY: add-crystal
+add-crystal:
 	$(call apk_add, crystal crystal-bash-completion crystal-doc)
 
-.PHONY: build-core
-build-core:
-	$(call apk_add, build-base linux-headers gdb)
+.PHONY: add-build-core
+add-build-core:
+	$(call apk_add, build-base linux-headers python3-dev gdb)
 
-.PHONY: alpine-sdk
-alpine-sdk:
+.PHONY: add-alpine-sdk
+add-alpine-sdk:
 	$(call apk_add, alpine-sdk gdb)
 
 # NOTE: This crashes ENTIRE Docker Desktop with error never seen (and restarts everything).

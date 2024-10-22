@@ -64,8 +64,8 @@ include $(initd_mk_files)
 # This is essentially what triggers the build
 # 		Variables can be provided via CMD in form "VAR=myval" or via /container/env
 # 		This uses Makefile's ?= syntax, which sets default value - if one was NOT provided by else
-# If not services set, enable  "syslogd" and "sshd"
+# If not services set, enable  "http" and "sshd"
 # The list of services to automatically start is a variable SERVICES.
-SERVICES ?= syslogd sshd http
+SERVICES ?= sshd http
 run: $(SERVICES)
 	$(info make.init terminating - this may be unexpected)

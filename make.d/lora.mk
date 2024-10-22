@@ -1,8 +1,9 @@
 ## ** LORAWAN **
 # > PLACEHOLDER - still looking for SIMPLE LoRa Network Server to use...
 
-.PHONY: lorawan-server
-lorawan-server: # erla
+
+.PHONY: add-lorawan-server
+add-lorawan-server:
 	$(info ** lorawan-server **)
 	$(error unimplemented)
 	$(info - tested in _seperate_ erlang-based container, but using APK erlang here does not)

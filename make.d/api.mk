@@ -1,10 +1,10 @@
 
-.PHONY: librouteros
-librouteros: /usr/local/src/librouteros-api/librouteros.so /app/librouteros/README.md 
+.PHONY: add-librouteros
+add-librouteros: /usr/local/src/librouteros-api/librouteros.so /app/librouteros/README.md 
 	mkdir -p /app/librouteros
 
-.PHONY: librouteros-dev
-librouteros-dev: alpine-sdk /usr/local/src/librouteros-api/librouteros.so
+.PHONY: add-librouteros-dev
+add-librouteros-dev: add-alpine-sdk /usr/local/src/librouteros-api/librouteros.so
 	$(shell mkdir -p /app/librouteros/src)
 	$(shell ln -s /usr/local/src/librouteros-api /app/librouteros/libsrc)
 	$(shell cp -n /usr/local/src/librouteros-api/examples/cmd.c /app/librouteros/src/roscmd.c)
@@ -42,7 +42,7 @@ librouteros-dev: alpine-sdk /usr/local/src/librouteros-api/librouteros.so
 #	git commit -m "make.d librouteros-lib defaults from `date`"
 
 .PRECIOUS: /usr/local/src/librouteros-api/librouteros.so
-/usr/local/src/librouteros-api/librouteros.so:
+/usr/local/src/librouteros-api/librouteros.so: add-git
 	mkdir -p /usr/local/src/librouteros-api
 	git clone https://github.com/gjalves/librouteros-api.git /usr/local/src/librouteros-api
 	$(call build_apk_addgroup, .librouteros-build, alpine-sdk)
@@ -53,11 +53,14 @@ librouteros-dev: alpine-sdk /usr/local/src/librouteros-api/librouteros.so
 
 
 define librouteros_readme
+
 ## RouterOS API C library and examples
+
+`/app/librouteros can be used to build Alpine's toolchain "apps", including within /container.
 
 > **This is work in progress.**
 
-Generally, speaking using REST and curl is a better plan.
+Generally speaking using REST and `curl` is a better plan.
 But idea is have the C RouterOS API library available in make.d
 to make it easier to use RouterOS API's **listen** action,
 since `curl` and RouterOS REST API are limited to polling,
@@ -65,11 +68,9 @@ or waiting a max 60 seconds.  The native API allow streaming.
 
 See https://help.mikrotik.com/docs/spaces/ROS/pages/47579160/API
 
-The RouterOS C library is installed via `mk librouteros`,
-without any compiler tools being permanently installed,
-this keeps disk space small once something has be compiled.
 
-`/app/librouteros can be used to build Alpine's toolchain "apps", including within /container.
+## Creating C RouterOS API apps
+
 To write your own code using the librouteros-api C libs, use
 `mk librouteros-dev` which DOES install the linux toolchains needed,
 and will add Makefile and more in this directory.
@@ -77,6 +78,18 @@ and will add Makefile and more in this directory.
 The `./src` is where you can your own C-based code.
 To build, just run `make` in /app/librouteros. This will [re-]compile the
 shared `librouteros.so` and run the `/app/librouteros/src/Makefile` .
+
+## librouteros vs librouteros-dev
+
+The RouterOS C library is installed via `mk librouteros`,
+without any compiler tools being permanently installed,
+this keeps disk space small once something has be compiled.
+
+But for development, the GNU toolchain is needed - which is 50M or more.
+The tools are installed automatically by `mk librouteros-dev`.  
+But, once you have complied a project, the toolchain is not needed to run your executable 
+and the toolchain can be removed (and/or re-added if needed) manually via:
+ `apk [add/del] alpine-sdk`, which includes most Linux build tools, including GNU.
 
 > `librouteros.so` comes from:
 > https://github.com/gjalves/librouteros-api

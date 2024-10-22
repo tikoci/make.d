@@ -1,7 +1,7 @@
 ## ** HELP **
 # > Help system and "notes"
 
-.PHONE: all-help
+.PHONY: all-help
 all-help: help commentary
 
 .PHONY: help
@@ -9,7 +9,8 @@ help: help-update
 	cat /etc/motd
 	$(warning Help is work-in-progress...)
 
-commentary: notes-container-use notes-tips notes-future-fixes notes-future-recipes notes-implementation
+.PHONY: commentary
+commentary: notes-container-use notes-tips notes-open-issues notes-future-recipes notes-building-new-recipes
 	$(info )
 	$(info ... last tip: targets can be combines, in help so `mk help commentary` run boths)
 	$(info )
@@ -32,7 +33,7 @@ list-commands:
 	echo $(CMDS) | sort | less
 
 .PHONY: list-games
-list-games: all-games
+list-games: tools-games
 	$(call list_manpages, 6) | less
 
 help-update:
@@ -42,7 +43,7 @@ help-update:
 
 .PHONY: notes-tips
 notes-tips:
-	$(warning ** make.d TIPS **)
+	$(warning -- make.d TIPS --)
 	$(info - make.d adds two scripts: `mk` and `edit` - the rest is in Makefile in /app)
 	$(info - `edit` follows $$EDITOR var - `nano` is default and shows syntax error+colors)
 	$(info - `mk` just wraps `make -f /app/Makefile ...` but shorter & work from any `pwd`)
@@ -52,15 +53,13 @@ notes-tips:
 	$(info - for viewing in color with paging use `mdless` (& `mdcat`))
 	$(info - the "shell jobs" cmds can be useful, see JOB CONTROL section in `man bash`)
 	$(info   ... or try ^Z from longer make to "suspend", then `bg %1` to background it )
-	$(info - /app is a `git` repo, even if not used to "checkin" - can see diff's from defaults)
-	$(info   ... use `git status` to see all changes, `git diff <file>` for one file )
 	$(info - sshd can be used with user `sysop`, password `changeme`)
 	$(info   but `sysop` is not an admin/root, so mainly for running UNIX tools via /system/ssh-exec)
 
 
 .PHONY: notes-container-use
 notes-container-use:
-	$(info ** ROUTEROS CONTAINER USAGE **)
+	$(warning -- ROUTEROS CONTAINER USAGE --)
 	$(info - Create a new container using this image, no mount or env are strickly needed)
 	$(info - In RouterOS, using dst-nat for incoming ports to make.d)
 	$(info   & src-nat outbound to enable internet is likely easiest config)
@@ -71,27 +70,39 @@ notes-container-use:
 	$(info - Options like BIND9_PORT=80 can be provided via "envs", instead of in `cmd=`.)
 
 
-.PHONY: notes-future-fixes
+.PHONY: notes-open-issues
 # just for fun, targets can just output text, here "todo"
-notes-future-fixes:
-	$(warning ** META BUGS **)
-	$(info - proper README.md at least)
-	$(info   and some better help system, perhaps a `helpme` command, similar to `mk`)
-	$(info - make note-* $$(info blocks) into define's w/ markdown, mdless to display)
-	$(info - bash completions work, but outputs annoying cgroup error in some YBD case)
-	$(info - routeros-side script/config/examples to use make.d services)
-	$(info - syslogd is wired up, but more pkgs use, and vars for remote syslog)
-	$(info - default "sysop" user is created for like ssh, but needs more setup/thought)
-	$(info - test/cleanup invoking browser from CLI, at least via shh)
-	$(info - need some tools to test/use RADIUS from user-manager)
-	$(info - more meta data and package dep tracking, TBD method)
-	$(info - $$(file X) should be own target, not part of a recipes )
+notes-open-issues:
+	$(warning -- OPEN ISSUES --)
+	$(info - docs: proper README.md at least)
+	$(info - make: package deps need work: make deps should ALWAYS be files as .PHONY always run "apk")
+	$(info - make: $$(file X) should be own target, not part of a recipes )
+	$(info - "on-demand" loading: scripts added that call make to get packages )
+	$(info - shell: alias for vi if not installed to vim,nvim,hx,...pico) 
+	$(info - "help": perhaps a `helpme` command, perhaps using mdbook for local http and man)
+	$(info - "edit": support using recipe like "edit mosquitto" to open a service's config file) 
+	$(info - basic http dev: add PHP/HTMX/Pico/Observable to lighttpd)
+	$(info - syslogd: wired up, but no package wired to potentially use it)
+	$(info - shell:  support ANSI code to make URL link (at least for SSH))
+	$(info - shell: "sysop"/users: one created for like ssh, but needs more setup/thought)
+	$(info - shell: /etc/services updated, to use in some TBD inetd-like port mapping scheme) 
+	$(info - make: regularize /scratch for tmp and /hive as "shared" /app dir across instances)
+	$(info - make: cargo install needs a function/thought)
+	$(warning - config: variables are need everywhere to control services) 
+	$(info - config: git vs fossil, +.mk script should save their own changes) 
+	$(info - config: should have some option to `tar` or lightweight backup CLI to just copy/save files like ) 
+	$(info - routeros+: script/config/examples to use make.d services)
+	$(info - routeros+: test/wrap freeradius tools from user-manager)
+	$(info - routeros+: bash completions outputs annoying cgroup error from one of them...)
+	$(info - sshd: dropbear sucks, and openssl get installed by curl, use normal sshd...)
+	$(info - make: service start != install in ALL cases, stress-build* so can build without starting )
 
 .PHONY: notes-future-recipes
 notes-future-recipes:
-	$(warning *** RECIPES IN THE WORKS **)
-	$(info lora - [priority] some small LoRa network server ... lorawan-server? chripstack?)
+	$(warning -- RECIPES IN THE WORKS --)
+	$(info lora - [priority] some small LoRa network server ... lorawan-server? old and does not work erlang package)
 	$(info dns - currently blocky and bind9, but add unbound just round out)
+	$(info dns - add DDNS service updates)
 	$(info http - lighttpd plugins, plus basiec traefik as first two)
 	$(info mail - [WIP] exim dovecot? imap?)
 	$(info vpn - [idea] wg* zerotier*)
@@ -101,11 +112,11 @@ notes-future-recipes:
 	$(info tuitools - [more google search] find/add more nice TUIs, like current mqttui)
 	$(warning make.d recipes are easy - testing and documenting them is harder)
 
-.PHONY: notes-implementation
-notes-implementation:
-	$(warning ** BUILDING NEW RECIPES **)
+.PHONY: notes-building-new-recipes
+notes-building-new-recipes:
+	$(warning -- BUILDING NEW RECIPES --)
 	$(info - GNU make manual is excellent!  Search that first.)
-	$(info   Questions like WTF is .ONESHELL or two-pass variable eval will be answered.)
+	$(info   Questions like WTF is .PHONY, or two-pass variable eval will be answered.)
 	$(info   ...in terminal, use `mk help` once, then `info make` to view GNU make manual)
 	$(info   ...via web: https://www.gnu.org/software/make/manual )
 	$(info - Check *.mk for examples - just adding a new .mk file to /app/make.d add them to `mk`)

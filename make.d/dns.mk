@@ -1,26 +1,29 @@
 # ** DNS ** is "pointer recipe" to the default DNS server since
 # todo: check ports / conflicts...  only one can be used
 
+
 # "alias" name for a dns resolver
 DEFAULT_DNS ?= blocky
 
 .PHONY: dns
 dns: $(DEFAULT_DNS)
 
+.PHONY: tools-dns
+tools-dns: /usr/bin/dig /usr/bin/dog
+.PRECIOUS: /usr/bin/dig
 /usr/bin/dig:
 	$(call apk_add, bind-tools)
-
-.PHONY: dns-tools
-dns-tools: /usr/bin/dig
-
-.PHONY: dig
-dig: /usr/bin/dig
-	dig
+.PRECIOUS: /usr/bin/dog
+/usr/bin/dog:
+	$(call apk_add, dog) 
 
 .PHONY: blocky
-BLOCKY_CONFIG := example.yml
-blocky: /usr/bin/blocky
+BLOCKY_CONFIG ?= example.yml
+blocky: add-blocky
 	/usr/bin/blocky --config /app/blocky/$(BLOCKY_CONFIG)
+
+.PHONY: add-blocky
+add-blocky: /usr/bin/blocky
 
 .PRECIOUS: /usr/bin/blocky
 /usr/bin/blocky:
@@ -31,11 +34,14 @@ blocky: /usr/bin/blocky
 	echo "$$blocky_readme" > /app/blocky/README.md
 
 .PHONY: bind9
-BIND9_PORT ?= 53
+BIND9_PORT ?= 5353
 BIND9_OPTS ?= -c /app/bind9/named.conf -p $(BIND9_PORT)
 BIND9_RUN_FG ?= -f
 bind9: /usr/sbin/named
 	/usr/sbin/named $(BIND9_RUN_FG) $(BIND9_OPTS)
+
+.PHONY: add-bind9
+add-bind9: /usr/sbin/named
 
 .PRECIOUS: /usr/sbin/named
 /usr/sbin/named:

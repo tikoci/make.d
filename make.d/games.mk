@@ -1,8 +1,8 @@
 ## ** GAMES **
 # > old BSD game collections, play-games provides "arcade" TUI
 
-.PHONY: all-games
-all-games:
+.PHONY: tools-games
+tools-games:
 	$(call apk_add_testing, bsd-games bsd-games-doc nbsdgames nbsdgames-doc words-en)
 
 .PHONY: play-games

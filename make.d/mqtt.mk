@@ -1,17 +1,22 @@
 ## ** MQTT **
 ## > Uses mosquiitto as MQTT broker
 
-DEFAULT_MQTT := mosquitto
+DEFAULT_MQTT ?= mosquitto
 
 .PHONY: mqtt
 mqtt: $(DEFAULT_MQTT)
 
 .PHONY: mosquitto
 # "mosquitto" service target
-MQTT_OPTS ?= -v -c /app/mosquitto/mosquitto.conf
-mosquitto: /usr/sbin/mosquitto /app/mosquitto/mosquitto.conf
+MQTT_VERBOSE = -v
+MQTT_OPTS ?= -c /app/mosquitto/mosquitto.conf
+mosquitto: add-mosquitto
 	$(info mosquitto starting)
+#	killall mosquitto
 	/usr/sbin/mosquitto $(MQTT_OPTS)
+
+.PHONY: add-mosquitto
+add-mosquitto: /usr/sbin/mosquitto /app/mosquitto/mosquitto.conf
 
 .PRECIOUS: /usr/sbin/mosquitto
 /usr/sbin/mosquitto:

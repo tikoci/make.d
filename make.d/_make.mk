@@ -2,13 +2,20 @@
 # > ... but just runs first from /app/Makefile, mainly helpers
 
 # ** apk_add function ** - _safely_ adds packages using Alpine's "apk add"
-APK_WAIT ?= 120
-apk_add = apk --wait $(APK_WAIT) --no-cache add $(1)
+APK_WAIT ?= 3600
+APK_OPTS ?=
+# causes package update from running make
+APK_UPDATE = $(shell apk update)
+
+### core helper functions for APK
+apk_add = apk --wait $(APK_WAIT) $(APK_OPTS) add $(1)
 apk_add_testing = apk --wait $(APK_WAIT) --no-cache add -X http://dl-cdn.alpinelinux.org/alpine/edge/testing $(1)
 build_apk_addgroup = apk --wait $(APK_WAIT) add --virtual $(1) $(2)
 build_apk_cleanup = apk --wait $(APK_WAIT) del $(1)
 apk_list_by_size = apk list -Iq | while read pkg; do apk info -s "$$pkg" | tac | tr '\n' ' ' | xargs | sed -e 's/\s//'; done | sort -h
-UNAME_MACHINE := $(shell uname -m)
+
+## get machine type (used to detect arch)
+UNAME_MACHINE = $(shell uname -m)
 
 .PHONY: check-for-updates
 check-for-updates:
@@ -23,34 +30,43 @@ upgrade: check-for-updates
 	apk update
 	apk upgrade
 
-.PHONY: install-all-tools
-install-all-tools: all-extras all-games all-mail all-runtimes all-serial all-text all-databases all-help
+.PHONY: install-everything install-all install-all-tools install-all-services install-all-built
+install-everything: install-all install-all-built
+install-all: install-all-tools install-all-services tools-all-langs
+install-all-tools: tools-extras tools-mail tools-games tools-dns tools-db tools-all-text tools-serial tools-all-vpns tools-video tools-files tools-cloud all-help
+install-all-services: add-nodered add-mosquitto add-postgres add-bind9 add-blocky add-caddy add-traefik add-lighttpd
+install-all-built: build-src
 
-.PHONY: git-save
-git-save:
-	git status
-	git add --all
-	git commit -m "make.d changes `date`"
-	git status
+.PHONY: build-src build-src-linux build-src-go build-src-rust build-src-skip
+build-src: build-src-linux build-src-go build-src-rust
+build-src-linux: add-midimonster add-librouteros-dev
+build-src-go: add-pocketbase
+build-src-rust:  add-unmake
 
-# These are used for testing...
-.PHONY: stress-everything stress-services stress-alls stress-nobuild
-stress-everything: stress-services stress-alls
-stress-services: stress-services-nobuild stress-services-build
-stress-alls: install-all-tools
-stress-nobuild: stress-alls stress-services-nobuild
+# these are just more "problematic", always skip them even when "all" and "everything"
+build-src-skip:  add-tsduck add-erlang-tui add-mdbook-man add-cute-tui
 
-.PHONY: stress-services-build stress-services-nobuild
-stress-services-nobuild: netinstall mqtt nodered redis telnetd postgres blocky lighttpd BIND9_PORT=5353 bind9
 ifeq ($(UNAME_MACHINE),armv7l)
-stress-services-build:  stress-build-linux
-	$(warning go & rust excluded armv7 - will cause routeros maxing both CPU & memory)
-	$(info but you can try... `mk stress-build-go` or `mk stress-build-rust`)
+	$(warning some services/tools are built from source - this may not work on low-end platforms)
 else
-stress-services-build:  stress-build-linux stress-build-go stress-build-rust
+	$(info running on $(UNAME_MACHINE))
 endif
 
-.PHONY: stress-build-go stress-build-rust stress-build-linux
-stress-build-linux: midimonster
-stress-build-go: pocketbase
-stress-build-rust: cute-tui
+
+# Essentially, some manually run "integration test" that installs everything
+# to see failures from build.  It's not a pass/fail, although ideally all "should
+# work", or been excluded on a platform, etc.
+.PHONY: stress-services stress-services-nobuild stress-services-built stress-services-nobuild-unwise
+stress-services: stress-services-nobuild stress-services-built stress-subcommands
+stress-services-nobuild: TRAEFIK_ENTRYPOINTS_HTTP_ADDRESS = :8082
+stress-services-nobuild: sshd syslogd telnetd mqtt nodered blocky lighttpd bind9 caddy traefik
+stress-services-nobuild-unwise: postgres
+stress-services-built: pocketbase midimonster
+
+.PHONY: stress-subcommands 
+stress-subcommands: git-init fossil-init
+
+.PHONY: stress-everything
+stress-everything: install-everything stress-services
+
+

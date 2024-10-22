@@ -15,39 +15,44 @@
 
 DOCKER_PORTMAP ?= 28080:80
 DOCKER_RUN ?= --net=host
-
+DOCKER_ADDITIONAL_TARGETS ?= help
 .PHONY: docker-shell
-.ONESHELL: docker-shell
+#.ONESHELL: docker-shell
 docker-shell:
-	docker buildx build $(DOCKER_OPTS) --tag make.d .
+	docker buildx build $(DOCKER_OPTS) --tag make.d --build-arg DOCKER_ADDITIONAL_TARGETS=$(DOCKER_ADDITIONAL_TARGETS) .
 	PID=$$(docker run --detach $(DOCKER_RUN) `docker images | awk '{print $$3}' | awk 'NR==2'` $(SERVICES)) && docker exec -it $$PID /bin/bash && docker kill $$PID && docker rm $$PID;
 
 .PHONY: docker-run
-.ONESHELL: docker-run
+#.ONESHELL: docker-run
 docker-run:
-	docker buildx build $(DOCKER_OPTS) --tag make.d .
+	docker buildx build $(DOCKER_OPTS) --tag make.d --build-arg DOCKER_ADDITIONAL_TARGETS=$(DOCKER_ADDITIONAL_TARGETS) .
 	PID=$$(docker run -p $(DOCKER_PORTMAP) --detach $(DOCKER_RUN) `docker images | awk '{print $$3}' | awk 'NR==2'` $(SERVICES))
 
 # todo: quick hack for test, should be built on GitHub
 .PHONY: docker-build
 docker-build: docker-build-arm6 docker-build-arm7 docker-build-arm64 docker-build-x86
 
+.PHONY: docker-build-init-containerd
+docker-build-init-containerd:
+	docker buildx create --driver docker-container --driver-opt image=moby/buildkit:master,network=host --use 
+	docker buildx inspect --bootstrap
+
 .PHONY: docker-build-arm6
 .ONESHELL: docker-build-arm6
 docker-build-arm6:
-	docker buildx build --output type=oci --platform=linux/arm/v6 --tag make.d . > make.d-arm6.tar
+	docker buildx build --output type=oci --platform=linux/arm/v6 --tag make.d --build-arg DOCKER_ADDITIONAL_TARGETS=$(DOCKER_ADDITIONAL_TARGETS) . > make.d-arm6.tar
 
 .PHONY: docker-build-arm7
 .ONESHELL: docker-build-arm7
 docker-build-arm7:
-	docker buildx build --output type=oci --platform=linux/arm/v7 --tag make.d . > make.d-arm7.tar
+	docker buildx build --output type=oci --platform=linux/arm/v7 --tag make.d --build-arg DOCKER_ADDITIONAL_TARGETS=$(DOCKER_ADDITIONAL_TARGETS) . > make.d-arm7.tar
 
 .PHONY: docker-build-arm64
-.ONESHELL: docker-build-arm64
+#.ONESHELL: docker-build-arm64
 docker-build-arm64:
-	docker buildx build --output type=oci --platform=linux/arm64 --tag make.d . > make.d-arm64.tar
+	docker buildx build --output type=oci --platform=linux/arm64 --tag make.d --build-arg DOCKER_ADDITIONAL_TARGETS=$(DOCKER_ADDITIONAL_TARGETS) . > make.d-arm64.tar
 
 .PHONY: docker-build-x86
-.ONESHELL: docker-build-x86
+#.ONESHELL: docker-build-x86
 docker-build-x86:
-	docker buildx build --output type=oci --platform=linux/amd64 --tag make.d . > make.d-x86.tar
+	docker buildx build --output type=oci --platform=linux/amd64 --tag make.d --build-arg DOCKER_ADDITIONAL_TARGETS=$(DOCKER_ADDITIONAL_TARGETS) . > make.d-x86.tar

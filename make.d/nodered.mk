@@ -2,11 +2,14 @@
 # > Not sure it's category, so it get it own for now
 
 
-.PHONY: node-red
+.PHONY: nodered
 NODERED_OPTS ?=
-nodered: /usr/local/bin/node-red
+nodered: add-nodered
 	mkdir -p /app/node-red
 	node-red --userDir /app/node-red $(NODERED_OPTS)
+
+.PHONY: add-nodered
+add-nodered: /usr/local/bin/node-red
 
 /usr/local/bin/node-red: /usr/bin/node
 	npm install -g --unsafe-perm node-red

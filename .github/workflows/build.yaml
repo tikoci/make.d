@@ -55,7 +55,7 @@ jobs:
           readme-filepath: "./README.md"
           short-description: "make.d - RouterOS-friendly Alpine /container, managed by Makefile"
 
-      - name: Build image and push image to ghcr.io
+      - name: Build image and push image - BASE
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -74,3 +74,24 @@ jobs:
             GHCR_REPO=${{ github.repository }}
             GHCR_TAG=${{ steps.meta.outputs.tags }}
             GHCR_PLATFORMS=${{ env.PLATFORMS }}
+
+      - name: Build image and push image - MAX 
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          sbom: false
+          provenance: false
+          platforms: ${{ env.PLATFORMS }}
+          tags: |
+            ghcr.io/${{ github.repository }}-max:latest
+            ghcr.io/${{ github.repository }}-max:${{ env.MAKED_CHANNEL }}
+            ghcr.io/${{ github.repository }}-max:${{ env.MAKED_VER }}
+            ammo74/make.d-max:latest
+            ammo74/make.d-max:${{ env.MAKED_VER }}
+            ammo74/make.d-max:${{ env.MAKED_CHANNEL }}
+          build-args: |
+            GHCR_REPO=${{ github.repository }}
+            GHCR_TAG=${{ steps.meta.outputs.tags }}
+            GHCR_PLATFORMS=${{ env.PLATFORMS }}
+            DOCKER_ADDITIONAL_TARGETS=install-everything

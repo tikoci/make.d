@@ -1,62 +1,83 @@
 ## ** TEXT **
 # > editors and text processing tools like texinfo and pandoc
 
-.PHONY: all-text
-all-text: vim emacs newsboat wikitui texinfo asciidoc pandoc
+.PHONY: tools-all-text
+tools-all-text: tools-editors tools-docs tools-color
 	$(warning pandoc and texinfo are kinda big...)
 	$(info text recipes just install packages)
 
-.PHONY: vim
-vim:
+.PHONY: tools-editors
+tools-editors: add-vim add-emacs add-helix tools-color
+
+.PHONY: tools-docs
+tools-docs: add-texinfo add-asciidoc add-pandoc add-mdbook tools-color
+
+.PHONY: add-vim
+add-vim:
 	$(call apk_add, vim vim-doc)
 
-.PHONY: emacs
-emacs:
+.PHONY: add-emacs
+add-emacs:
 	$(call apk_add, emacs emacs-doc)
 
-.PHONY: wikitui
-wikitui:
-	$(call apk_add_testing, wiki-tui wiki-tui-doc)
+# helix editor - lightweight vi with colors + tree-sitter
+.PHONY: add-helix
+add-helix: /usr/bin/hx
+.PRECIOUS: /usr/bin/hx
+/usr/bin/hx: add-tree-sitter
+	$(call apk_add_testing, helix)
 
-.PHONY: texinfo
-texinfo:
+.PHONY: add-tree-sitter
+add-tree-sitter:
+#	add-tree-sitter seems broken
+	$(call apk_add, tree-sitter tree-sitter-bash tree-sitter-c tree-sitter-cmake tree-sitter-comment tree-sitter-cpp tree-sitter-css tree-sitter-go tree-sitter-go-mod tree-sitter-html tree-sitter-ini tree-sitter-javascript tree-sitter-jsdoc tree-sitter-json tree-sitter-lua tree-sitter-python tree-sitter-regex tree-sitter-ruby tree-sitter-rust tree-sitter-static tree-sitter-toml tree-sitter-typescript)
+
+.PHONY: add-texinfo
+add-texinfo:
 	$(call apk_add, texinfo texinfo-doc )
 
-.PHONY: asciidoc
-asciidoc:
+.PHONY: add-asciidoc
+add-asciidoc:
 	$(call apk_add, asciidoc asciidoc-doc)
 
-.PHONY: pandoc
-pandoc: asciidoc texinfo
+.PHONY: add-pandoc
+add-pandoc: add-asciidoc add-texinfo
 	$(call apk_add, pandoc-cli)
 
-.PHONY: newsboat
-newsboat: /app/newsboat/awesome-rss-feeds/README.md
-	$(call apk_add, newsboat newsboat-doc)
-	$(shell mkdir -p /app/newsboat)
-	$(file >/app/newsboat/urls,$(mikrotik_newsboat_urls))
-	mkdir -p ~/.newsboat
-	cp -n /app/newsboat/urls ~/.newsboat/urls
+.PHONY: add-mdbook
+add-mdbook: /usr/bin/mdbook /app/mdbook/book.toml
+	$(info mdbook for manpages use `mk mdbook-man` - but takes a long while since it builds rust)
+.PRECIOUS: /app/mdbook/book.toml
+/app/mdbook/book.toml: /usr/bin/mdbook
+	/usr/bin/mdbook init /app/mdbook --title "make.d" --ignore git
+	/usr/bin/mdbook build /app/mdbook
+.PHONY: add-mdbook-man
+add-mdbook-man: /usr/bin/mdbook /usr/local/bin/mdbook-man
+.PRECIOUS: /usr/bin/mdbook
+/usr/bin/mdbook:
+	$(call apk_add, mdbook)
+/usr/local/bin/mdbook-man: /usr/bin/mdbook
+	$(call build_apk_addgroup, .mdbook-man, cargo)
+	cargo install mdbook-man
+	cp /root/.cargo/mdbook-man $@
+	$(call build_apk_cleanup, .mdbook-man, cargo)
 
-# keep a copy of _unloaded_ RSS for for use with 'newsboat -I <file>' to import
-# feeds in _local_ users - Mikrotik URL are only default RSS feeds.
-.PRECIOUS: /app/newsboat/awesome-rss-feeds/README.md
-/app/newsboat/awesome-rss-feeds/README.md:
-	$(shell mkdir -p /app/newsboat/awesome-rss-feeds)
-	wget https://github.com/plenaryapp/awesome-rss-feeds/archive/refs/heads/master.zip -O /app/newsboat/awesome-rss.zip
-	unzip /app/newsboat/awesome-rss.zip -d /app/newsboat
-	mv /app/newsboat/awesome-rss-feeds-master /app/newsboat/awesome-rss-feeds
-	rm -f /app/newsboat/awesome-rss.zip
 
-define mikrotik_newsboat_urls
-https://mikrotik.com/current.rss mikrotik news "~Mikrotik Releases and News"
-https://forum.mikrotik.com/feed.php?f=21 mikrotik news forum "~Mikrotik Forum - Announcements"
-https://forum.mikrotik.com/feed.php?f=23 mikrotik forum "~Mikrotik Forum - Useful user articles"
-https://forum.mikrotik.com/feed.php?f=2 mikrotik forum "~Mikrotik Forum - General"
-https://forum.mikrotik.com/feed.php?f=24 mikrotik forum "~Mikrotik Forum - Containers"
-https://forum.mikrotik.com/feed.php?f=25 mikrotik forum "~Mikrotik Forum - 3rd party tools"
-https://forum.mikrotik.com/feed.php?f=9 mikrotik forum "~Mikrotik Forum - Scripting "
-https://forum.mikrotik.com/feed.php?f=8 mikrotik forum "~Mikrotik Forum - The Dude"
-https://forum.mikrotik.com/feed.php?f=10 mikrotik forum "~Mikrotik Forum - The User Manager"
-https://forum.mikrotik.com/feed.php?f=15 mikrotik forum "~Mikrotik Forum - Virtualization"
-endef
+# metapackage "colorized" tools for cat/less printing of formatted files
+.PHONY: tools-color
+tools-color: /usr/bin/bat /usr/bin/jless /usr/bin/mdless
+# colorized cat
+.PRECIOUS: /usr/bin/bat
+/usr/bin/bat:
+	$(call apk_add, bat)
+# colorized json cat
+.PRECIOUS: /usr/bin/jless
+/usr/bin/jless:
+	$(call apk_add, jless)
+# colorized md cat
+.PRECIOUS: /usr/bin/mdless
+/usr/bin/mdless:
+	$(call apk_add_testing, mdcat)
+.PRECIOUS: /usr/bin/mdcat
+/usr/bin/mdcat: /usr/bin/mdless
+	$(call apk_add_testing, mdcat)

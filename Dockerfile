@@ -1,6 +1,8 @@
 FROM alpine
 
-ENV HOSTNAME=make1
+ARG DOCKER_ADDITIONAL_TARGETS=help
+
+ENV HOSTNAME=maked.home.arpa
 ENV TERM=xterm
 ENV EDITOR=nano
 
@@ -11,7 +13,7 @@ WORKDIR /app
 
 # Install the absolute mininum packages in Dockerfile
 # Since packages may be install, keep a package index
-RUN apk update && apk add make git nano
+RUN apk update && apk add make git nano curl
 
 # install the Makefile "init" system
 COPY Makefile /app/Makefile
@@ -22,26 +24,12 @@ COPY .gitignore /app/.gitignore
 
 # install a curated set of Alpine packages
 # basically some "inetd" things, common
-RUN make -f /app/make.d/__init.mk \
-# initialize git in /app to track changes
-    && git init --initial-branch=local \
-    && git add --all \
-    && git config --global user.name "make.d git" \
-    && git config --global user.email "make.d@tikoci.github.io" \
-    && git commit -m "default-configuration"
-
-# not used by RouterOS but suggest something to Docker
-EXPOSE 22
-EXPOSE 80
-EXPOSE 443
-EXPOSE 3000
-EXPOSE 8080
-
+RUN make -f /app/make.d/__init.mk && /usr/local/bin/mk ${DOCKER_ADDITIONAL_TARGETS}
 
 # IMPORTANT: CMD and ENTRYPOINT must use array syntax - otherwise args don't work
 
 # make is entrypoint - see README.md for details on this approach
-ENTRYPOINT ["make", "--debug=a", "--jobs=1024", "--no-builtin-rules", "--warn-undefined-variables"]
+ENTRYPOINT ["make", "--debug=a", "--jobs=1024", "--warn-undefined-variables"]
 # note: the "-j 10" is the job limit for parallel jobs, by default its 2
 #       but as an "init" process
 
