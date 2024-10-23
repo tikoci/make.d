@@ -3,8 +3,7 @@
 >  _Even this README is a work in progress._
 
 ```
-define etc_motd
-> make.d 0.1.167 alpha
+> make.d 0.1.172 alpha
 
 ███╗   ███╗ █████╗ ██╗  ██╗███████╗   ██████╗
 ████╗ ████║██╔══██╗██║ ██╔╝██╔════╝   ██╔══██╗
@@ -13,25 +12,7 @@ define etc_motd
 ██║ ╚═╝ ██║██║  ██║██║  ██╗███████╗██╗██████╔╝
 ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝╚═════╝
 
-
 Curated Alpine Linux tools and services to work with RouterOS.
-
-Using `/container/shell`...
-  More tools can be added using `mk <recipe>`.
-  Using `bash`, hit TAB twice after `mk` shows recipes to make.
-  Most configuration is stored under `/app`, use `edit <file>`.
-  The default `nano` editor supports basic colors and syntax checks.
-
-For services "daemons", make.d uses `/app/Makefile` to run them
-  Daemons are just "build targets", provided as `cmd=` to `/container`
-  e.g.  `/container add tag="ammo74/make.d" cmd="midimonster mqtt"`,
-  make.d relies on `make`'s parallelization & "reaping" to run them both
-
-See https://github.com/tikoci/make.d for the latest info.
-For help, use `mk help` or `mk commentary` for release notes.
-Linux man pages are also available: `man <command>` or `man -k <topic>`
-
-endef
 ```
 
 ## make.d Container
@@ -42,105 +23,175 @@ To bring up make.d, use `/container add tag="ammo74/make.d"` with VETH that allo
 outbound internet, and any ports "exposed" by any service _recipes_ allowed inbound
 is what's required.  The specific config beyond that is highly dependent on use cases.
 
-By default, make.d brings up `syslogd`, `lighttpd`, and Dropbear `sshd` if **nothing** is set
+By default, make.d brings up `lighttpd`, and `sshd` if **nothing** is set
 in `cmd=` nor `entrypoint=` (and no env's).  A webpage will shown on port 80, 
 and one non-root user `sysop` (_password_ `changeme`) for use with SSH.
 
 To run no services, set make.d container's `cmd=loop`.  This is useful for experimenting,
 since `/container/shell` allows access to make.d as `root` to run things.  
 
+> **_Internals:_ Startup**
+> 
 > Since `make` is the entrypoint, `cmd` is assumed to be a target in `/app/Makefile`.
 > By design, if `make` exits, the container stops as the prevents errors from going unnoticed –
 > `make` should succeed, or be waiting on some process to exit - just like default Alpine.
-> So `loop` is a special target to keep `make /app/Makefile` waiting, on nothing. 
+> So `loop` is a special target to keep `make /app/Makefile` waiting, on _nothing_. 
 > `run` is also a special target, that is `Dockerfile` default `cmd=`, and uses
-> a `SERVICES` env var to read the list of services (as an alternative to modifying `cmd=`)
-> If `SERVICES` is not set in `/container/env` for make.d, then `Makefile` will use
-> a default value of "syslogd sshd http" — which is how the default config works.
+> a `SERVICES` env var to read the list of services (as an alternative to modifying `cmd=`).
+> If `SERVICES` is not set in `/container/env` for make.d, then Makefile` will use
+> a default value of "sshd http" — which is how the default config works.  Changing
+> either the env var, or cmd= is how you set what service you'd like to start. 
 
 ## About make.d Framework
 
-make.d is more a simple layer over Alpine's APK packages, than a new container.  
-Alpine has many packages, but not all are as regularized as other distros.
-So one fundamental _opinion_ is all configuration should like under `/app`,
-with configuration following through environment variables - not files.
-The other make.d framework principal is all "scripting" flow through a `Makefile`,
-to organize "shell code" than a bunch of `*.sh` files everywhere - leveraging `make`'s
-ability along with, now unwritten, conventions.
+make.d is more a simple "overlay" over Alpine's APK package management, than a new container.
+In fact, just you can just `git clone` this repo into /app using a base Alpine container, 
+and running `make` will do the same things as the `Dockerfile` just the same.
 
-> Also, nothing is RouterOS-specific other than perhaps packages and a few recipes.
-> The author's specific needs however are RouterOS /containers, thus the focus.  
+The idea behind make.d to be a semi-curated set of Alpine, for a variety of needs.
+While Alpine simplicity is it's benifit, sometimes some cocktail of packages are needed
+but the right `apk` and `vi` incantations are not always easy.
+
+An additional feature of make.d is "meta packages", so `mk tools-network` will add a variety of 
+networking tools like `dig` and `iperf3`, in one operation.  Also in the tool department, and for fun...
+a variety of TUI-based interfaces are also available. Like [`mk add-newsboat`](https://newsboat.org) will install an TUI-based RSS reader, 
+that can be started with `newsboat`, and comes preloaded by [`/app/make.d/extras.mk`](https://github.com/tikoci/make.d/blob/main/make.d/extras.mk) with various RouterOS RSS feeds.
+
+One _opinion_ here is all configuration should like under `/app`,
+ideally with configuration through environment variables - not files - for better automation.
+The other make.d framework principal is all "scripting" flow through a `Makefile`,
+which organizes all the "shell code" better than a bunch of `*.sh` files everywhere - leveraging `make`'s
+ability along with some unwritten conventions to enable it.  Along those lines, even modified config is stored
+in the Makefiles - rather than in seperate files.  With the idea being to force using tools (`sed`/`awk`/`patch`/`jq`/etc) 
+to **modify** an existing configuration, than replacing files.
+
+
+> Nothing here is RouterOS-specific.  A few recipes are,
+> like librouteros-dev, which adds a lib for the RouterOS native API and mini-devkit in `/app/librouteros`,
+> but none installed by "default". The author's specific needs however are RouterOS /containers,
+> which is "unusual" container host.  But make.d work an "APK wrapper" on any Alpine-based installing,
+> even outside containers – it's just a `Makefile` at the end of the day.  
+
 
 ## make.d Recipes
 
 Recipes are invoked using `mk` in `/container/shell`, or in `cmd=` to run at startup.  The recipes 
 are stored in `/app/make.d/*.mk`, and loaded by `/app/Makefile`.  
 
-> In the shell, the `mk` command is added by make.d, wraps `make -f /app/Makefile`, 
-> to `make` can be called from **any directory**, and `mk` args are passed directly to
-> `/app/Makefile`.  So `mk`'s options match `man make`.  
+New receipes can be added by too, not quite "just copy-and-paste", but there are plenty of examples.
+Any file ending in `*.mk`, will automatically be available as part of `mk` 
+(and `make -C /app <target>`) just by being place in `/app/make.d`.
 
+> In the shell, the `mk` command is added by make.d, but just wraps `make -C /app`, 
+> to allow `make` being called from **any directory**, with any `mk` args are passed directly to
+> `/app/Makefile`.  
 
-A specific list is
-shown using `mk `<kbd>tab</kbd><kbd>tab</kbd>:
+A specific list of availble recipes can view either by using tab-completion `mk `<kbd>tab</kbd><kbd>tab</kbd>, 
+or `mk list-recipes`:
 
 ```
-all-databases            help                     play-games
-all-extras               help-job-control         play-mines
-all-games                help-update              play-snake
-all-help                 http                     pocketbase
-all-mail                 imap                     postgres
-all-runtimes             install-all-tools        pqsl
-all-serial               librouteros              python3
-all-text                 librouteros-dev          redis
-alpine-sdk               lighttpd                 ruby
-asciidoc                 list-commands            run
-bind9                    list-games               rust
-blocky                   list-recipes             sqlite
-build-core               loop                     sshd
-check-for-updates        lorawan-server           stress-alls
-commentary               midimonster              stress-build-go
-crystal                  mosquitto                stress-build-linux
-cute-tui                 mqtt                     stress-build-rust
-dns                      netinstall               stress-everything
-docker-build             newsboat                 stress-nobuild
-docker-build-arm6        nmap                     stress-services
-docker-build-arm64       node-red                 stress-services-build
-docker-build-arm7        nodejs                   stress-services-nobuild
-docker-build-x86         nodered                  syslogd
-docker-run               nodered-update           systeroid
-docker-shell             notes-container-use      telnetd
-dovecot                  notes-future-fixes       texinfo             
+add-alpine-sdk                  add-sox                         mosquitto
+add-asciidoc                    add-sqlite                      mqtt
+add-aws-cli                     add-systeroid                   netinstall
+add-bind9                       add-texinfo                     nodered
+add-blocky                      add-traefik                     nodered-update
+add-build-core                  add-tree-sitter                 notes-building-new-recipes
+add-caddy                       add-trippy                      notes-container-use
+add-cloudflared                 add-tsduck                      notes-future-recipes
+add-crystal                     add-unmake                      notes-open-issues
+add-cute-tui                    add-vim                         notes-tips
+add-dovecot                     add-wiki-tui                    play-atc
+add-emacs                       all-extras                      play-games
+add-erlang                      all-help                        play-mines
+add-erlang-tui                  bind9                           play-snake
+add-exim                        blocky                          pocketbase
+add-ffmpeg                      build-src                       postgres
+add-fossil                      build-src-go                    postgres-start
+add-git                         build-src-linux                 postgres-stop
+add-goimapnotify                build-src-rust                  pqsl
+add-golang                      caddy                           redis
+add-gstreamer                   check-for-updates               run
+add-helix                       commentary                      sshd
+add-imap                        dns                             stress-build-src
+add-iperf3                      docker-build                    stress-everything
+add-librouteros                 docker-build-arm6               stress-services
+add-librouteros-dev             docker-build-arm64              stress-services-built
+add-lighttpd                    docker-build-arm7               stress-services-nobuild
+add-lorawan-server              docker-build-init-containerd    stress-services-nobuild-unwise
+add-mailtutan                   docker-build-x86                stress-subcommands
+add-mdbook                      docker-run                      syslogd
+add-mdbook-man                  docker-shell                    telnetd
+add-midimonster                 fossil-init                     tools-all-langs
+add-mosquitto                   git-commit                      tools-all-text
+add-mtr                         git-init                        tools-all-vpns
+add-newsboat                    help                            tools-cloud
+add-nmap                        help-job-control                tools-color
+add-nodejs                      help-update                     tools-db
+add-nodered                     http                            tools-dns
+add-openapi-tui                 install-all                     tools-docs
+add-openvpn                     install-all-built               tools-editors
+add-pandoc                      install-all-services            tools-extras
+add-pocketbase                  install-all-tools               tools-files
+add-postgres                    install-everything              tools-games
+add-pptpclient                  lighttpd                        tools-mail
+add-python3                     list-commands                   tools-network
+add-redis                       list-games                      tools-serial
+add-restic                      list-recipes                    tools-tuis
+add-rsync                       loop                            tools-video
+add-ruby                        mailtutan-test                  tools-wireguard
+add-rust                        midimonster                     traefik
+add-rustic                      midimonster-drivers             upgrade          
 ```
 
-Some recipes just install tools, like `mk python3` which will add python for use.
+Some recipes just install tools, like `mk add-python3` which will add python for use.
 Other recipes might both install and run something, like `mk play-snake`, which also runs
-`apk add bsdgames` to get `snake` into the container.
+[`apk add bsdgames`](https://wiki.linuxquestions.org/wiki/BSD_games) to facilite "download on demand" for `snake`.
+Others like `midimonster` and `mosquitto` even allow integration MIDI with RouterOS.
+
+> **_Internals:_ Compiled Code**
+> >
+> In some cases, services can be compiled inside the /container, 
+> with `/app/make.d/midi.mk` as an example that loads tools to build, then
+> compiles [`midimonster`](https://midimonster.net) for the architecture, and finally
+> removes build tools to preserve disk space.
+> Internally, builder uses `apk ... -virtual ...`.  More complex builds will crash most RouterOS devices.
+> e.g. `mk add-cute-tui` which uses Rust's `cargo`, and `mk pocketbase` which uses `go`
+> – both will crash a RB1100AHx4.
+> A set of "stress-*" targets are offered by `mk` if that's what you're looking to do.
+
+## "Daemons" and Services
+
+"Daemons" are called _service recipes_, are typically network services like `bind9` 
+or applications like `lighttpd`.  Generally, services have no prefix like `tools-` or `add-`.
+If you want to run "all services" (for testing), use `mk stress-services`, which starts most service recipes.
+Service recipes are designed to be used on the `cmd=` in `/container` on RouterOS (or, provided by SERVICES= env var)
+`make` will keep running generally by requesting they are foregrounded. 
+For example, `cmd=`, `SERVICES`, or `mk` in `/container/shell` used
+"midimonster mqtt http", all three services will be run by `make` using it's `-j #` option.
+
+To see running services, you can use `/container/shell` with `ps -ef` to see running processes.
+If needed, `killall <service_name>` can be used to stop a process. 
+To look at what ports have services listening for network connections, use `netstat -plt`.
 
 
-"Daemons" are called _service recipes_, which are typically network services like `bind9` 
-or applications like `lighttpd`.  
+### Testing Services
 
-Service recipes are designed to be used on the `cmd=`
-to keep them running in the container.  For testing, shell job control can be used to
-start services temporally from `/container/shell`.  For example, to start `mosquitto` MQTT broker,
-using ampersand & after make means run in the background: `mk <service_recipe> &`.  `man bash`.
-See `mk help-job-control` for details on shell job control.
+Shell "job control" can be used to start services temporally from `/container/shell`.  
+Essentially it's using ampersand & after the service name: `mk <service_recipe> &`.  
+See `mk help-job-control` for details on shell job control,
+but basically `jobs` shows anything backgrounded by you using the `&`, 
+with `kill %1` stopping job 1, with number after `%` coming from `jobs`.
 
-As more a proof-of-concept, not services in make.d will work out-of-the-box, but
+
+## Future
+
+As more a proof-of-concept, not services in make.d may work out-of-the-box, but
 most were tacitly tested to start.  Check the code in /app/make.d/*.mk for
 any services you plan to use – most have some rough commentary on status and/or usage. 
  _Some things may_ never _run on low mem/CPU devices - but that's not something anyone can fix_.  
- And various parts are half-based, like `/app` is a git repo, but nothing uses it.  And some
-"recipes" only wrap `apk add`, but do not move the package's config under `/app`.
+ And various parts are half-baked or placeholders, many
+"recipes" only wrapping `apk add`, but do not move the package's config under `/app`.
 
 
-> In some cases, services can be compiled inside the /container if needed (albeit small things), 
-> with `/app/make.d/midi.mk` as an example that loads tools to build, then
-> compiles [`midimonster`](https://midimonster.net) for the architecture, and finally
-> removes build tools to preserve disk space.  Internally, this uses `apk ... -virtual ...`.
-> **More complex builds will crash most RouterOS devices**.  e.g. `mk cute-tui` (aka `mk stress-build-rust`) 
-> which uses Rust's `cargo`, and `mk pocketbase` which uses `go` – both will crash a RB1100AHx4.
-> A set of "stress-*" targets are offered by `mk`, like `mk stress-everything` if that's
-> what you're looking to do.
+
 
