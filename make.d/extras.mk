@@ -94,13 +94,13 @@ endif
 # schemas
 
 #### Rust TUIs reviewed but not included:
-### interesting but require cargo install 
-# atac # 
+### interesting but require cargo install
+# atac #
 # sshs # TUI saved ssh session to pick
 # netop (+libpcap-dev) # network monitoring
 # grex # regex "helper"
 ### broken/less potentially useful
-# zenith # monitoring but crashes due to "battery" (Alpine has no ACPI nor sys... things for it) 
+# zenith # monitoring but crashes due to "battery" (Alpine has no ACPI nor sys... things for it)
 # topgrade # upgrade/version checking - does little
 # erldash	# likely works, but need erlang - moved to install with erlang
-# 
+#

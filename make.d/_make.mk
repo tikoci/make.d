@@ -16,6 +16,11 @@ apk_list_by_size = apk list -Iq | while read pkg; do apk info -s "$$pkg" | tac |
 
 ## get machine type (used to detect arch)
 UNAME_MACHINE = $(shell uname -m)
+ifeq (,$(findstring armv,$(UNAME_MACHINE)))
+$(info running on $(UNAME_MACHINE))
+else
+$(warning some services/tools are built from source - this may not work on low-end platforms)
+endif
 
 .PHONY: check-for-updates
 check-for-updates:
@@ -32,34 +37,28 @@ upgrade: check-for-updates
 
 .PHONY: install-everything install-all install-all-tools install-all-services install-all-built
 install-everything: install-all install-all-built tools-all-langs
-install-all: install-all-tools install-all-services install-all-built 
+install-all: install-all-tools install-all-services install-all-built
 install-all-tools: tools-extras tools-mail tools-games tools-dns tools-db tools-all-text tools-serial tools-all-vpns tools-video tools-files tools-cloud all-help
 install-all-services: add-nodered add-mosquitto add-postgres add-bind9 add-blocky add-caddy add-traefik add-lighttpd
 install-all-built: build-src
 
-.PHONY: build-src build-src-linux build-src-go build-src-rust 
+.PHONY: build-src build-src-linux build-src-go build-src-rust
 build-src: build-src-linux build-src-go build-src-rust
 ifeq (,$(findstring armv,$(UNAME_MACHINE)))
-	build-src-linux: add-midimonster add-librouteros-dev
-	build-src-go: add-pocketbase
-	build-src-rust:  add-unmake add-mdbook-man
+build-src-linux: add-midimonster add-librouteros-dev
+build-src-go: add-pocketbase
+build-src-rust:  add-unmake add-mdbook-man
 else
-	build-src-linux: add-midimonster add-librouteros-dev
-	build-src-go:
-		$(warning build-src skips go for armv6 and armv7)
-	build-src-rust:
-		$(warning build-src skips go for armv6 and armv7)
+build-src-linux: add-midimonster add-librouteros-dev
+build-src-go:
+	$(warning build-src skips go for armv6 and armv7)
+build-src-rust:
+	$(warning build-src skips go for armv6 and armv7)
 endif
 
 # these are just more "problematic", always skip them even when "all" and "everything"
 .PHONY: stress-build-src
-stress-build-src: build-src add-pocketbase add-erlang-tui add-cute-tui add-mdbook-man add-tsduck 
-
-ifeq (,$(findstring armv,$(UNAME_MACHINE)))
-	$(info running on $(UNAME_MACHINE))
-else
-	$(warning some services/tools are built from source - this may not work on low-end platforms)
-endif
+stress-build-src: build-src add-pocketbase add-erlang-tui add-cute-tui add-mdbook-man add-tsduck
 
 
 # Essentially, some manually run "integration test" that installs everything
