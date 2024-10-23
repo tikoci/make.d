@@ -42,7 +42,11 @@ add-asciidoc:
 
 .PHONY: add-pandoc
 add-pandoc: add-asciidoc add-texinfo
+ifeq (,$(findstring armv,$(UNAME_MACHINE)))
 	$(call apk_add, pandoc-cli)
+else
+	$(warning skipping 'pandoc-cli' package on $(UNAME_MACHINE))
+endif
 
 .PHONY: add-mdbook
 add-mdbook: /usr/bin/mdbook /app/mdbook/book.toml

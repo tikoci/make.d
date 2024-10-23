@@ -31,25 +31,34 @@ upgrade: check-for-updates
 	apk upgrade
 
 .PHONY: install-everything install-all install-all-tools install-all-services install-all-built
-install-everything: install-all install-all-built
-install-all: install-all-tools install-all-services tools-all-langs
+install-everything: install-all install-all-built tools-all-langs
+install-all: install-all-tools install-all-services install-all-built 
 install-all-tools: tools-extras tools-mail tools-games tools-dns tools-db tools-all-text tools-serial tools-all-vpns tools-video tools-files tools-cloud all-help
 install-all-services: add-nodered add-mosquitto add-postgres add-bind9 add-blocky add-caddy add-traefik add-lighttpd
 install-all-built: build-src
 
-.PHONY: build-src build-src-linux build-src-go build-src-rust build-src-skip
+.PHONY: build-src build-src-linux build-src-go build-src-rust 
 build-src: build-src-linux build-src-go build-src-rust
-build-src-linux: add-midimonster add-librouteros-dev
-build-src-go: add-pocketbase
-build-src-rust:  add-unmake
+ifeq (,$(findstring armv,$(UNAME_MACHINE)))
+	build-src-linux: add-midimonster add-librouteros-dev
+	build-src-go: add-pocketbase
+	build-src-rust:  add-unmake add-mdbook-man
+else
+	build-src-linux: add-midimonster add-librouteros-dev
+	build-src-go:
+		$(warning build-src skips go for armv6 and armv7)
+	build-src-rust:
+		$(warning build-src skips go for armv6 and armv7)
+endif
 
 # these are just more "problematic", always skip them even when "all" and "everything"
-build-src-skip:  add-tsduck add-erlang-tui add-mdbook-man add-cute-tui
+.PHONY: stress-build-src
+stress-build-src: build-src add-pocketbase add-erlang-tui add-cute-tui add-mdbook-man add-tsduck 
 
-ifeq ($(UNAME_MACHINE),armv7l)
-	$(warning some services/tools are built from source - this may not work on low-end platforms)
-else
+ifeq (,$(findstring armv,$(UNAME_MACHINE)))
 	$(info running on $(UNAME_MACHINE))
+else
+	$(warning some services/tools are built from source - this may not work on low-end platforms)
 endif
 
 
@@ -63,7 +72,7 @@ stress-services-nobuild: sshd syslogd telnetd mqtt nodered blocky lighttpd bind9
 stress-services-nobuild-unwise: postgres
 stress-services-built: pocketbase midimonster
 
-.PHONY: stress-subcommands 
+.PHONY: stress-subcommands
 stress-subcommands: git-init fossil-init
 
 .PHONY: stress-everything

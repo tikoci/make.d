@@ -32,7 +32,12 @@ add-rust:
 .PHONY: add-erlang
 # also inlcudes elixir and gleam
 add-erlang:
+ifeq (,$(findstring armv,$(UNAME_MACHINE)))
 	$(call apk_add, erlang erlang-doc rebar3 elixir elixir-doc gleam)
+else
+	$(call apk_add, erlang erlang-doc rebar3 elixir elixir-doc)
+	$(warning skipping gleam on arm7l)
+endif
 
 # requires cargo
 .PHONY: add-erlang-tui
@@ -51,7 +56,11 @@ add-ruby:
 
 .PHONY: add-crystal
 add-crystal:
+ifeq (,$(findstring armv,$(UNAME_MACHINE)))	
 	$(call apk_add, crystal crystal-bash-completion crystal-doc)
+else
+	$(warning skipping crystal on arm7l)
+endif
 
 .PHONY: add-build-core
 add-build-core:

@@ -75,7 +75,6 @@ add-cute-tui: /usr/local/bin/cute
 add-unmake: /usr/local/bin/unmake
 .PRECIOUS: /usr/local/bin/unmake
 /usr/local/bin/unmake:
-	$(warning uses rust/cargo to build it self - this is too much on RB1100, likely any armv7 system)
 	$(call build_apk_addgroup, .cargo-unmake, rust cargo)
 	cargo install unmake
 	cp ~/.cargo/bin/unmake /usr/local/bin
@@ -86,10 +85,10 @@ add-unmake: /usr/local/bin/unmake
 
 .PHONY: add-openapi-tui
 add-openapi-tui:
-ifeq ($(UNAME_MACHINE),armv7l)
-	$(warning "Skipping openapi-tui on armhf architecture")
-else
+ifeq (,$(findstring armv,$(UNAME_MACHINE)))
 	$(call apk_add_testing, openapi-tui)
+else
+	$(warning "Skipping openapi-tui on armhf architecture")
 endif
 
 # schemas

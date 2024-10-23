@@ -94,4 +94,4 @@ jobs:
             GHCR_REPO=${{ github.repository }}
             GHCR_TAG=${{ steps.meta.outputs.tags }}
             GHCR_PLATFORMS=${{ env.PLATFORMS }}
-            DOCKER_ADDITIONAL_TARGETS=install-everything
+            DOCKER_ADDITIONAL_TARGETS=install-all
