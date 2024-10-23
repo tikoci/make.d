@@ -3,7 +3,7 @@
 >  _Even this README is a work in progress._
 
 ```
-> make.d 0.1.172 alpha
+> make.d 0.1.173 alpha
 
 ███╗   ███╗ █████╗ ██╗  ██╗███████╗   ██████╗
 ████╗ ████║██╔══██╗██║ ██╔╝██╔════╝   ██╔══██╗
