@@ -111,12 +111,12 @@ For more help, use `mk help`, and `mk commentary`.
 endef
 
 # todo: support some debug mode to add -d to make
-MK_FLAGS ?= -d
+MK_FLAGS ?= --debug=bjv
 define usr_local_bin_mk
 #!/bin/sh
 SAVEDIR=`pwd`
 cd /app
-make $(MK_FLAGS) -j 1024 --warn-undefined-variables $$@
+make $(MK_FLAGS) -j 512 $$@
 cd $$SAVEDIR
 endef
 
