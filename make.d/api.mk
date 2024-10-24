@@ -161,7 +161,7 @@ roscancel: roscancel.c
 
 .PHONY: install
 
-install: $(TARGETS)
+install: $$(TARGETS)
 	cp $$(TARGETS) /usr/local/bin
 
 .PHONY: clean

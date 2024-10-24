@@ -49,7 +49,11 @@ include ./make.d/_make.mk
 
 # add Desktop Docker targets for run and build
 # todo: exclude when not actually running on docker
+ifeq (,$(wildcard /etc/alpine-release))
 include ./make.d/_docker.mk
+else
+$(info running on Alpine, do not expose docker helpers)
+endif
 
 # add *.mk files from make.d so there usable via cmd=
 initd_mk_files := $(wildcard ./make.d/*.mk)
