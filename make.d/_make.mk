@@ -46,8 +46,8 @@ install-all-built: build-src
 build-src: build-src-linux build-src-go build-src-rust
 ifeq (,$(findstring armv,$(UNAME_MACHINE)))
 build-src-linux: add-midimonster add-librouteros-dev
-build-src-go: add-pocketbase
-build-src-rust:  add-unmake add-mdbook-man
+build-src-go:
+build-src-rust:  add-unmake
 else
 build-src-linux: add-midimonster add-librouteros-dev
 build-src-go:
@@ -58,7 +58,7 @@ endif
 
 # these are just more "problematic", always skip them even when "all" and "everything"
 .PHONY: stress-build-src
-stress-build-src: build-src add-pocketbase add-erlang-tui add-cute-tui add-mdbook-man add-tsduck
+stress-build-src: build-src add-pocketbase add-erlang-tui add-cute-tui add-mdbook-man add-tsduck add-mdbook-man
 
 
 # Essentially, some manually run "integration test" that installs everything
