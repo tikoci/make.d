@@ -36,18 +36,18 @@ upgrade: check-for-updates
 	apk upgrade
 
 .PHONY: install-everything install-all install-all-tools install-all-services install-all-built
-install-everything: install-all install-all-built tools-all-langs
+install-everything: install-all install-all-built tools-all-langs build-src
 install-all: install-all-tools install-all-services install-all-built
-install-all-tools: tools-extras tools-mail tools-games tools-dns tools-db tools-all-text tools-serial tools-all-vpns tools-video tools-files tools-cloud all-help add-python3 add-nodejs
-install-all-services: add-mosquitto add-postgres add-bind9 add-blocky add-caddy add-traefik add-lighttpd
-install-all-built: build-src
+install-all-tools: tools-extras tools-mail tools-games tools-dns tools-db tools-all-text tools-serial tools-all-vpns tools-video tools-music tools-files tools-cloud all-help add-python3 add-nodejs
+install-all-services: add-mosquitto add-bind9 add-blocky add-caddy add-traefik add-lighttpd
+install-all-built: add-midimonster add-librouteros-dev
 
 .PHONY: build-src build-src-linux build-src-go build-src-rust
 build-src: build-src-linux build-src-go build-src-rust
 ifeq (,$(findstring armv,$(UNAME_MACHINE)))
 build-src-linux: add-midimonster add-librouteros-dev
-build-src-go:
-build-src-rust:  add-unmake
+build-src-go: add-pocketbase
+build-src-rust: add-cute-tui add-mdbook-man add-tsduck add-unmake add-erlang-tui
 else
 build-src-linux: add-midimonster add-librouteros-dev
 build-src-go:
@@ -58,7 +58,7 @@ endif
 
 # these are just more "problematic", always skip them even when "all" and "everything"
 .PHONY: stress-build-src
-stress-build-src: build-src add-pocketbase add-erlang-tui add-cute-tui add-mdbook-man add-tsduck add-mdbook-man
+stress-build-src: build-src
 
 
 # Essentially, some manually run "integration test" that installs everything
@@ -75,6 +75,6 @@ stress-services-built: pocketbase midimonster
 stress-subcommands: git-init fossil-init
 
 .PHONY: stress-everything
-stress-everything: install-everything stress-services
+stress-everything: install-everything stress-services stress-subcommands stress-build-src
 
 

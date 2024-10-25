@@ -1,5 +1,8 @@
 ## ** MIDI **
 # > just `midimonster` but it more than MIDI
+.PHONY: tools-music
+tools-music: add-midimonster
+
 
 .PHONY: midimonster
 MIDI_CONFIG ?= rtpmidi-mqtt.cfg
