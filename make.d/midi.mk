@@ -37,9 +37,9 @@ midimonster-drivers: midimonster
 # note: this is NOT a .PHONY - we actually want to check if FILE EXIST - here 'midimonster'
 #       if not... get tools, build it, and remove build-only tools
 .PRECIOUS:  /usr/local/bin/midimonster
-/usr/local/bin/midimonster: /usr/local/src/midimonster/Makefile /usr/local/src/midimonster/patches
+/usr/local/bin/midimonster: /usr/local/src/midimonster/Makefile /usr/local/src/midimonster/patches add-lua53
 # these APKs use at runtime for midimonster
-	$(call apk_add, $(MIDI_EXTRA_APKS) openssl lua5.3 lua5.3-libs)
+	$(call apk_add, $(MIDI_EXTRA_APKS) openssl)
 # Linux dev tools/libraries used to build only (and removed)
 	$(call build_apk_addgroup, .build-midimonster, \
 		git \

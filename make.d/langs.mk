@@ -10,6 +10,12 @@ add-nodejs: /usr/bin/node
 /usr/bin/node:
 	$(call apk_add, nodejs nodejs-doc npm npm-doc yarn)
 
+.PHONY: add-lua53
+add-lua53: /usr/bin/lua5.3
+/usr/bin/lua5.3:
+	$(call apk_add, lua5.3 lua5.3-libs lua5.3-doc lua5.3-mosquitto lua5.3-sqlite lua5.3-toml lua5.3-yaml lua5.3-http lua5.3-curl lua5.3-apk lua5.3-ansicolors lua5.3-jsonschema)
+
+
 .PHONY: add-golang
 add-golang: /usr/bin/go
 .PRECIOUS: /usr/bin/go

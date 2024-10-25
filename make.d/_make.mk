@@ -38,8 +38,8 @@ upgrade: check-for-updates
 .PHONY: install-everything install-all install-all-tools install-all-services install-all-built
 install-everything: install-all install-all-built tools-all-langs
 install-all: install-all-tools install-all-services install-all-built
-install-all-tools: tools-extras tools-mail tools-games tools-dns tools-db tools-all-text tools-serial tools-all-vpns tools-video tools-files tools-cloud all-help
-install-all-services: add-nodered add-mosquitto add-postgres add-bind9 add-blocky add-caddy add-traefik add-lighttpd
+install-all-tools: tools-extras tools-mail tools-games tools-dns tools-db tools-all-text tools-serial tools-all-vpns tools-video tools-files tools-cloud all-help add-python3 add-nodejs
+install-all-services: add-mosquitto add-postgres add-bind9 add-blocky add-caddy add-traefik add-lighttpd
 install-all-built: build-src
 
 .PHONY: build-src build-src-linux build-src-go build-src-rust
@@ -53,7 +53,7 @@ build-src-linux: add-midimonster add-librouteros-dev
 build-src-go:
 	$(warning build-src skips go for armv6 and armv7)
 build-src-rust:
-	$(warning build-src skips go for armv6 and armv7)
+	$(warning build-src skips rust for armv6 and armv7)
 endif
 
 # these are just more "problematic", always skip them even when "all" and "everything"
@@ -67,8 +67,8 @@ stress-build-src: build-src add-pocketbase add-erlang-tui add-cute-tui add-mdboo
 .PHONY: stress-services stress-services-nobuild stress-services-built stress-services-nobuild-unwise
 stress-services: stress-services-nobuild stress-services-built stress-subcommands
 stress-services-nobuild: TRAEFIK_ENTRYPOINTS_HTTP_ADDRESS = :8082
-stress-services-nobuild: sshd syslogd telnetd mqtt nodered blocky lighttpd bind9 caddy traefik
-stress-services-nobuild-unwise: postgres
+stress-services-nobuild: sshd syslogd telnetd mqtt blocky lighttpd bind9 caddy traefik
+stress-services-nobuild-unwise: postgres nodered
 stress-services-built: pocketbase midimonster
 
 .PHONY: stress-subcommands

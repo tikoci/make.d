@@ -60,6 +60,7 @@ add-mdbook-man: /usr/bin/mdbook /usr/local/bin/mdbook-man
 .PRECIOUS: /usr/bin/mdbook
 /usr/bin/mdbook:
 	$(call apk_add, mdbook)
+.PRECIOUS: /usr/local/bin/mdbook-man
 /usr/local/bin/mdbook-man: /usr/bin/mdbook
 	$(call build_apk_addgroup, .mdbook-man, cargo)
 	cargo install mdbook-man

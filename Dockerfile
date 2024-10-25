@@ -28,13 +28,13 @@ COPY .gitignore /app/.gitignore
 # basically some "inetd" things, common
 RUN make -d --warn-undefined-variables -f /app/make.d/__init.mk
 # include any "extra packages", like "install-all", using make.d Makefile 
-RUN make -C /app --debug=bjv --warn-undefined-variables -j 64 ${DOCKER_ADDITIONAL_TARGETS}
+RUN make -C /app -d -j 16 --warn-undefined-variables ${DOCKER_ADDITIONAL_TARGETS}
 # todo: keeping 2nd RUN seperate to see in build to debug, but should be combined with && above
 
 # IMPORTANT: CMD and ENTRYPOINT must use array syntax - otherwise args don't work
 
 # make is entrypoint - see README.md for details on this approach
-ENTRYPOINT ["make", "--debug=bjv", "--jobs=512", "--warn-undefined-variables"]
+ENTRYPOINT ["make", "--debug=bjv", "--jobs=64", "--warn-undefined-variables"]
 # note: the "-j 10" is the job limit for parallel jobs, by default its 2
 #       but as an "init" process
 

@@ -5,7 +5,7 @@
 all-help: help commentary
 
 .PHONY: help
-help: help-update
+help:
 	cat /etc/motd
 	$(warning Help is work-in-progress...)
 

@@ -1,14 +1,20 @@
 
 
 .PHONY: tools-db
-tools-db: add-sqlite add-redis
+tools-db: add-sqlite
 
 # todo: if postgres is only target it container will stop since Makefile will finish
 #       ... while goal is all services wait in foreground in make.d - postgres violates it.
 # note: it's expected for larger database needs, a seperate instance should be used & postgres is picky
-
-.PHONY: postgres
 PGDATA ?= /app/postgres/data
+ifneq (,$(findstring armv,$(UNAME_MACHINE)))
+.PHONY: postgres add-postgres
+postgres:
+	$(warning postgress is not supported on 32-bit ARM)
+add-postgres:
+	$(warning postgress is not supported on 32-bit ARM)
+else
+.PHONY: postgres
 # from: https://luppeng.wordpress.com/2020/02/28/install-and-start-postgresql-on-alpine-linux/
 postgres: /app/postgres/data/postgresql.conf /usr/bin/pg_ctl /run/postgresql
 #	su postgres -c "echo 'unix_socket_directories = /tmp' >> /app/postgres/data/postgresql.conf"
@@ -49,13 +55,10 @@ pqsl:
 	su postgres -c "echo 'host all all 0.0.0.0/0 md5' >> /app/postgres/data/pg_hba.conf"
 	su postgres -c "echo listen_addresses=\'*\' >> /app/postgres/data/postgresql.conf"
 #	su postgres -c "echo unix_socket_directories=\'/app/postgres/run\' >> /app/postgres/data/postgresql.conf"
+endif
 
 .PHONY: add-sqlite
 add-sqlite: /usr/bin/sqlite3
 .PRECIOUS: /usr/bin/sqlite3
 /usr/bin/sqlite3:
 	$(call apk_add, sqlite sqlite-doc sqlite-tools)
-
-.PHONY: redis
-add-redis:
-	$(call apk_add, redis)

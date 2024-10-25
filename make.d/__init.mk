@@ -116,7 +116,7 @@ define usr_local_bin_mk
 #!/bin/sh
 SAVEDIR=`pwd`
 cd /app
-make $(MK_FLAGS) -j 512 $$@
+make $(MK_FLAGS) -j 32 $$@
 cd $$SAVEDIR
 endef
 
