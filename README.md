@@ -3,7 +3,7 @@
 >  _Even this README is a work in progress._
 
 ```
-> make.d 0.1.173 alpha
+> make.d 0.1.174 alpha
 
 ███╗   ███╗ █████╗ ██╗  ██╗███████╗   ██████╗
 ████╗ ████║██╔══██╗██║ ██╔╝██╔════╝   ██╔══██╗
@@ -90,57 +90,54 @@ A specific list of availble recipes can view either by using tab-completion `mk 
 or `mk list-recipes`:
 
 ```
-add-alpine-sdk                  add-sox                         mosquitto
-add-asciidoc                    add-sqlite                      mqtt
-add-aws-cli                     add-systeroid                   netinstall
-add-bind9                       add-texinfo                     nodered
-add-blocky                      add-traefik                     nodered-update
-add-build-core                  add-tree-sitter                 notes-building-new-recipes
-add-caddy                       add-trippy                      notes-container-use
-add-cloudflared                 add-tsduck                      notes-future-recipes
-add-crystal                     add-unmake                      notes-open-issues
-add-cute-tui                    add-vim                         notes-tips
-add-dovecot                     add-wiki-tui                    play-atc
-add-emacs                       all-extras                      play-games
-add-erlang                      all-help                        play-mines
-add-erlang-tui                  bind9                           play-snake
-add-exim                        blocky                          pocketbase
-add-ffmpeg                      build-src                       postgres
-add-fossil                      build-src-go                    postgres-start
-add-git                         build-src-linux                 postgres-stop
-add-goimapnotify                build-src-rust                  pqsl
-add-golang                      caddy                           redis
-add-gstreamer                   check-for-updates               run
-add-helix                       commentary                      sshd
-add-imap                        dns                             stress-build-src
-add-iperf3                      docker-build                    stress-everything
-add-librouteros                 docker-build-arm6               stress-services
-add-librouteros-dev             docker-build-arm64              stress-services-built
-add-lighttpd                    docker-build-arm7               stress-services-nobuild
-add-lorawan-server              docker-build-init-containerd    stress-services-nobuild-unwise
-add-mailtutan                   docker-build-x86                stress-subcommands
-add-mdbook                      docker-run                      syslogd
-add-mdbook-man                  docker-shell                    telnetd
-add-midimonster                 fossil-init                     tools-all-langs
-add-mosquitto                   git-commit                      tools-all-text
-add-mtr                         git-init                        tools-all-vpns
-add-newsboat                    help                            tools-cloud
-add-nmap                        help-job-control                tools-color
-add-nodejs                      help-update                     tools-db
-add-nodered                     http                            tools-dns
-add-openapi-tui                 install-all                     tools-docs
-add-openvpn                     install-all-built               tools-editors
-add-pandoc                      install-all-services            tools-extras
-add-pocketbase                  install-all-tools               tools-files
-add-postgres                    install-everything              tools-games
-add-pptpclient                  lighttpd                        tools-mail
-add-python3                     list-commands                   tools-network
-add-redis                       list-games                      tools-serial
-add-restic                      list-recipes                    tools-tuis
-add-rsync                       loop                            tools-video
-add-ruby                        mailtutan-test                  tools-wireguard
-add-rust                        midimonster                     traefik
-add-rustic                      midimonster-drivers             upgrade          
+add-alpine-sdk                  add-ruby                        netinstall
+add-asciidoc                    add-rust                        nodered
+add-aws-cli                     add-rustic                      nodered-update
+add-bind9                       add-sox                         notes-building-new-recipes
+add-blocky                      add-sqlite                      notes-container-use
+add-build-core                  add-systeroid                   notes-future-recipes
+add-caddy                       add-texinfo                     notes-open-issues
+add-cloudflared                 add-traefik                     notes-tips
+add-crystal                     add-tree-sitter                 play-atc
+add-cute-tui                    add-trippy                      play-games
+add-dovecot                     add-tsduck                      play-mines
+add-emacs                       add-unmake                      play-snake
+add-erlang                      add-vim                         pocketbase
+add-erlang-tui                  add-wiki-tui                    postgres
+add-exim                        all-extras                      run
+add-ffmpeg                      all-help                        sshd
+add-fossil                      bind9                           stress-build-src
+add-git                         blocky                          stress-everything
+add-goimapnotify                build-src                       stress-services
+add-golang                      build-src-go                    stress-services-built
+add-gstreamer                   build-src-linux                 stress-services-nobuild
+add-helix                       build-src-rust                  stress-services-nobuild-unwise
+add-imap                        caddy                           stress-subcommands
+add-iperf3                      check-for-updates               syslogd
+add-librouteros                 commentary                      telnetd
+add-librouteros-dev             dns                             tools-all-langs
+add-lighttpd                    fossil-init                     tools-all-text
+add-lorawan-server              git-commit                      tools-all-vpns
+add-lua53                       git-init                        tools-cloud
+add-mailtutan                   help                            tools-color
+add-mdbook                      help-job-control                tools-db
+add-mdbook-man                  help-update                     tools-dns
+add-midimonster                 http                            tools-docs
+add-mosquitto                   install-all                     tools-editors
+add-mtr                         install-all-built               tools-extras
+add-newsboat                    install-all-services            tools-files
+add-nmap                        install-all-tools               tools-games
+add-nodejs                      install-everything              tools-mail
+add-nodered                     lighttpd                        tools-music
+add-openapi-tui                 list-commands                   tools-network
+add-openvpn                     list-games                      tools-serial
+add-pandoc                      list-recipes                    tools-tuis
+add-pocketbase                  loop                            tools-video
+add-postgres                    mailtutan-test                  tools-wireguard
+add-pptpclient                  midimonster                     traefik
+add-python3                     midimonster-drivers             upgrade
+add-restic                      mosquitto                       
+add-rsync                       mqtt                            
 ```
 
 Some recipes just install tools, like `mk add-python3` which will add python for use.
