@@ -20,6 +20,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
       - name: Set up QEMU need for cross-platform building
         uses: docker/setup-qemu-action@v3
         with:
@@ -41,12 +44,42 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Bump patch version in VERSION and README.md
         run: |
+          # read returns non-zero when file lacks trailing newline, so check content instead
           read -r name ver channel < VERSION || true
+          
+          if [ -z "$name" ] || [ -z "$ver" ] || [ -z "$channel" ]; then
+            echo "Error: VERSION must be in the format: <name> <major.minor.patch> <channel>" >&2
+            echo "Got: name='${name}', ver='${ver}', channel='${channel}'" >&2
+            exit 1
+          fi
+
+          if ! [[ "$ver" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: version '${ver}' is not a valid semantic version (expected major.minor.patch)" >&2
+            exit 1
+          fi
+
           IFS='.' read -r major minor patch <<< "$ver"
+          if [ -z "$major" ] || [ -z "$minor" ] || [ -z "$patch" ]; then
+            echo "Error: failed to parse version components from '${ver}'" >&2
+            exit 1
+          fi
           patch=$((patch + 1))
           new_ver="${major}.${minor}.${patch}"
           echo "${name} ${new_ver} ${channel}" > VERSION
-          sed -i "s/> ${name} ${ver} ${channel}/> ${name} ${new_ver} ${channel}/" README.md
+          old="> ${name} ${ver} ${channel}"
+          new="> ${name} ${new_ver} ${channel}"
+          python3 - "$old" "$new" << 'PY'
+import sys
+from pathlib import Path
+
+old, new = sys.argv[1], sys.argv[2]
+path = Path("README.md")
+text = path.read_text(encoding="utf-8")
+if old not in text:
+    raise SystemExit(f"Old version string not found in README.md: {old!r}")
+text = text.replace(old, new, 1)
+path.write_text(text, encoding="utf-8")
+PY
       - name: Commit updated version
         run: |
           git config user.name "github-actions[bot]"
@@ -56,8 +89,7 @@ jobs:
             echo "No version changes to commit"
           else
             git commit -m "build: bump version to $(awk '{print $2}' VERSION)"
-            git pull --rebase
-            git push
+            git push origin HEAD:${{ github.ref }}
           fi
       - name: VERSION file to CI envvars
         run: |
