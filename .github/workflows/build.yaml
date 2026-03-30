@@ -12,7 +12,7 @@ env:
 
 permissions:
   packages: write
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -39,6 +39,26 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Bump patch version in VERSION and README.md
+        run: |
+          read -r name ver channel < VERSION || true
+          IFS='.' read -r major minor patch <<< "$ver"
+          patch=$((patch + 1))
+          new_ver="${major}.${minor}.${patch}"
+          echo "${name} ${new_ver} ${channel}" > VERSION
+          sed -i "s/> ${name} ${ver} ${channel}/> ${name} ${new_ver} ${channel}/" README.md
+      - name: Commit updated version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION README.md
+          if git diff --cached --quiet; then
+            echo "No version changes to commit"
+          else
+            git commit -m "build: bump version to $(awk '{print $2}' VERSION)"
+            git pull --rebase
+            git push
+          fi
       - name: VERSION file to CI envvars
         run: |
           cat VERSION | awk '{ print "MAKED_NAME=" $1 }' >> $GITHUB_ENV
